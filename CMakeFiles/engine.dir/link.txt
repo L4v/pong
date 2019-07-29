@@ -1,0 +1,1 @@
+/usr/bin/c++    -rdynamic CMakeFiles/engine.dir/pong.cpp.o  -o engine -lsfml-system -lsfml-window -lsfml-graphics 

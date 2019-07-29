@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/jigsaw/workspace/cpp/games/pong/pong.cpp
+pong.hpp
+/home/jigsaw/workspace/cpp/games/pong/pong.hpp
+
+/home/jigsaw/workspace/cpp/games/pong/pong.hpp
+cstdlib
+-
+SFML/Graphics.hpp
+-
+SFML/Window.hpp
+-
+SFML/System.hpp
+-
+
