@@ -1,5 +1,18 @@
 #include "pong.hpp"
 
+typedef int8_t int8;
+typedef int16_t int16;
+typedef int32_t int32;
+typedef int64_t int64;
+typedef int32 bool32;
+
+typedef uint8_t uint8;
+typedef uint16_t uint16;
+typedef uint32_t uint32;
+typedef uint64_t uint64;
+
+typedef float real32;
+typedef double real64;
 
 void render(sf::RenderWindow* window){
     window->clear();
@@ -24,7 +37,6 @@ int main(int argc, char* argv[]){
     data.window = new sf::RenderWindow(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT),
         "PONG!");
     data.window->setFramerateLimit(60);
-
 
 
     while (data.window->isOpen())
