@@ -11,9 +11,13 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
-#define Kilobytes(Value) ((Value)*1024)
-#define Megabytes(Value) (Kilobytes(Value)*1024)
-#define Gigabytes(Value) (Megabytes(Value)*1024)
+#define internal static
+#define global_variable static
+#define local_persist static
+
+#define Kibibytes(Value) ((Value)*1024)
+#define Mebibytes(Value) (Kilobytes(Value)*1024)
+#define Gigibytes(Value) (Megabytes(Value)*1024)
 
 struct game_data{
     sf::RenderWindow* window;
@@ -28,5 +32,5 @@ sf::Sprite player, ai;
 //     int height;
 // };
 
-void render(sf::RenderWindow*);
+void RenderAndUpdate(sf::RenderWindow*);
 

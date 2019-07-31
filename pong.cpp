@@ -14,7 +14,7 @@ typedef uint64_t uint64;
 typedef float real32;
 typedef double real64;
 
-void render(sf::RenderWindow* window){
+void RenderAndUpdate(sf::RenderWindow* window){
     window->clear();
 
     window->draw(player);
@@ -41,9 +41,16 @@ int main(int argc, char* argv[]){
 
     while (data.window->isOpen())
         {
-
-            render(data.window);
-
+	  
+	  if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+	    player.move(0.f, -1.f * 10.f);
+	  
+	  if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+	    player.move(0.f, 1.f * 10.f);
+	  
+	  
+          RenderAndUpdate(data.window);
+	    
             sf::Event event;
             while (data.window->pollEvent(event))
             {
