@@ -6,77 +6,98 @@ void RenderAndUpdate(game_memory* Memory, sf::RenderWindow* window, const real32
   }
   
   // Updating states
-
+  
   player.dy = 0.f;
   if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
     player.dy = -1.f;
 
   if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
     player.dy = 1.f;
+  
+  // Ball hits top
+  if(b.sprite.getPosition().y <= 0.f){
+    b.sprite.setPosition(b.sprite.getPosition().x, 0.f);
+    b.dy *= -1.f;
+  }
 
+  // Ball hits bottom
+  if(b.sprite.getPosition().y + b.height >= WINDOW_HEIGHT){
+    b.sprite.setPosition(b.sprite.getPosition().x, WINDOW_HEIGHT - b.height);
+    b.dy *= -1.f;
+  }
+  
   // Ball leaves level
-  if(b.sprite.getPosition().x < 0.f || b.sprite.getPosition().x > WINDOW_WIDTH
-     || b.sprite.getPosition().y < 0 || b.sprite.getPosition().y > WINDOW_HEIGHT){
-    b.sprite.setPosition(WINDOW_WIDTH / 2 - b.sprite.getGlobalBounds().width / 2,
-			 WINDOW_HEIGHT / 2 - b.sprite.getGlobalBounds().width /2);
+  if(b.sprite.getPosition().x < 0.f || b.sprite.getPosition().x > WINDOW_WIDTH){
+    b.sprite.setPosition(WINDOW_WIDTH / 2 - b.width / 2,
+			 WINDOW_HEIGHT / 2 - b.height /2);
     b.dx = -maxBallSpeed;
     b.dy = 0.f;
-    b.x_dir = -1.f;
-    b.y_dir = 0.f;
   }
   // TODO(l4v): ball collision
   // Ball collision with paddles
 
   // Player right collision
-  if((b.sprite.getPosition().x <=
-      player.sprite.getPosition().x + player.sprite.getGlobalBounds().width
-      && b.sprite.getPosition().x + b.sprite.getGlobalBounds().width >=
-      player.sprite.getPosition().x)
-     && (b.sprite.getPosition().y + b.sprite.getGlobalBounds().height
-	 >= player.sprite.getPosition().y
-	 && b.sprite.getPosition().y <= player.sprite.getPosition().y
-	 + player.sprite.getGlobalBounds().height)){
-    b.x_dir = 1.f;
-    b.sprite.setPosition(player.sprite.getPosition().x
-			 + player.sprite.getGlobalBounds().width,
-			 b.sprite.getPosition().y);
-    b.y_dir = player.dy < 0.f ? -1.f : player.dy > 0.f ? 1.f : 0.f;
+  if((b.sprite.getPosition().x <= player.sprite.getPosition().x + player.width && b.sprite.getPosition().x + b.width >= player.sprite.getPosition().x)
+     && (b.sprite.getPosition().y + b.height >= player.sprite.getPosition().y && b.sprite.getPosition().y <= player.sprite.getPosition().y + player.height)){
+    b.dx *= -1.f;
+    b.sprite.setPosition(player.sprite.getPosition().x + player.width, b.sprite.getPosition().y);
+    // Collision with upper third
+    if(b.sprite.getPosition().y + b.height / 2 <=
+       player.sprite.getPosition().y
+       + player.height / 3)
+      {
+	b.dy = -b.dx;
+      }
+    // Collision with lower third
+    else if(b.sprite.getPosition().y + b.height / 2 >=
+	    player.sprite.getPosition().y +
+	    (2.f/3.f) * player.height)
+      {
+	b.dy = b.dx;
+      }
+    // Collision with middle
+    else{
+      b.dy = 0.f;
+    }
   }
 
   // AI left collision
-  if((b.sprite.getPosition().x + b.sprite.getGlobalBounds().width >=
+  if((b.sprite.getPosition().x + b.width >=
       ai.sprite.getPosition().x
       && b.sprite.getPosition().x <=
-      ai.sprite.getPosition().x + ai.sprite.getGlobalBounds().width)
-     && (b.sprite.getPosition().y + b.sprite.getGlobalBounds().height
+      ai.sprite.getPosition().x + ai.width)
+     && (b.sprite.getPosition().y + b.height
 	 >= ai.sprite.getPosition().y
 	 && b.sprite.getPosition().y <= ai.sprite.getPosition().y
-	 + ai.sprite.getGlobalBounds().height)){
-    b.x_dir = -1.f;
+	 + ai.height)){
     b.sprite.setPosition(ai.sprite.getPosition().x
-			 - b.sprite.getGlobalBounds().width,
+			 - b.width,
 			 b.sprite.getPosition().y);
+    b.dx *= -1.f;
+    
+    // Collision with upper third
+    if(b.sprite.getPosition().y + b.height / 2 <=
+       ai.sprite.getPosition().y
+       + ai.height / 3)
+      {
+	b.dy = b.dx;
+      }
+    // Collision with lower third
+    else if(b.sprite.getPosition().y + b.height / 2 >=
+	    ai.sprite.getPosition().y +
+	    (2.f/3.f) * ai.height)
+      {
+	b.dy = -b.dx;
+      }
+    // Collision with middle
+    else{
+      b.dy = 0.f;
+    }
   }
-
-  // Ball spin
   
-  
-  // Player up collision
-  // if(b.sprite.getPosition().y + b.sprite.getGlobalBounds().height >=
-  //    player.sprite.getPosition().y
-  //    && (b.sprite.getPosition().x >= player.sprite.getPosition().x
-  // 	 + player.sprite.getGlobalBounds().width
-  // 	 && b.sprite.getPosition().x + b.sprite.getGlobalBounds().width >=
-  // 	 player.sprite.getPosition().x))
-  //   b.y_dir = -0.f;
- 
-  // TODO(l4v): Rest of Player and AI collisions
-  // TODO(l4v): Ball "spin" depending on whether the paddle was moving
-  // up or down
   // Calculate ball velocity
-  b.dx += ballAccel * b.x_dir;
-  b.dy += ballAccel * b.y_dir;
-
+  b.sprite.move(b.dx * dt, b.dy * dt);
+  
   // Ball speed limit
   if(b.dx > 0 && b.dx >= maxBallSpeed)
     b.dx = maxBallSpeed;
@@ -90,7 +111,12 @@ void RenderAndUpdate(game_memory* Memory, sf::RenderWindow* window, const real32
     
   // Update locations
   player.sprite.move(0.f, player.dy * paddleSpeed * dt);
-  b.sprite.move(b.dx * dt, b.dy * dt);
+  if(player.sprite.getPosition().y <= 0.f)
+    player.sprite.setPosition(player.sprite.getPosition().x, 0.f);
+  if(player.sprite.getPosition().y + player.height >= WINDOW_HEIGHT)
+    player.sprite.setPosition(player.sprite.getPosition().x,
+			      WINDOW_HEIGHT - player.height);
+  // b.sprite.move(b.dx * dt, b.dy * dt);
     
   // Event handling
   sf::Event event;
@@ -100,6 +126,7 @@ void RenderAndUpdate(game_memory* Memory, sf::RenderWindow* window, const real32
 	window->close();
     }
 
+  
   // Render stuff
   window->clear();
     
@@ -161,11 +188,15 @@ int main(int argc, char* argv[]){
   b.sprite.setPosition(WINDOW_WIDTH / 2 - b.sprite.getGlobalBounds().width / 2,
 		       WINDOW_HEIGHT / 2 - b.sprite.getGlobalBounds().width /2);
   
-  
+  player.width = player.sprite.getGlobalBounds().width;
+  player.height = player.sprite.getGlobalBounds().height;
+  ai.width = ai.sprite.getGlobalBounds().width;
+  ai.height = ai.sprite.getGlobalBounds().height;
+
+  b.width = b.sprite.getGlobalBounds().width;
+  b.height = b.sprite.getGlobalBounds().height;
   b.dx = -maxBallSpeed;
   b.dy = 0.f;
-  b.x_dir = -1.f;
-  b.y_dir = 0.f;
     
   // Main game loop
   while (window.isOpen())

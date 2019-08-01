@@ -63,14 +63,16 @@ struct game_state{
 struct paddle{
   sf::Sprite sprite;
   real32 dy = 1.f;
+  real32 width;
+  real32 height;
 };
 
 struct ball{
   sf::Sprite sprite;
   real32 dx;
   real32 dy;
-  real32 x_dir;
-  real32 y_dir;
+  real32 width;
+  real32 height;
 };
 
 //game_data data;
