@@ -77,7 +77,7 @@ struct ball{
 
 // TEMP
 real32 paddleSpeed = 500.f;
-real32 maxBallSpeed = 50.f;
+real32 maxBallSpeed = 500.f;
 real32 ballAccel = 10.f;
 
 paddle player, ai;

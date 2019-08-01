@@ -28,23 +28,48 @@ void RenderAndUpdate(game_memory* Memory, sf::RenderWindow* window, const real32
   // Ball collision with paddles
 
   // Player right collision
-  if(b.sprite.getPosition().x <=
-     player.sprite.getPosition().x + player.sprite.getGlobalBounds().width
+  if((b.sprite.getPosition().x <=
+      player.sprite.getPosition().x + player.sprite.getGlobalBounds().width
+      && b.sprite.getPosition().x + b.sprite.getGlobalBounds().width >=
+      player.sprite.getPosition().x)
      && (b.sprite.getPosition().y + b.sprite.getGlobalBounds().height
 	 >= player.sprite.getPosition().y
 	 && b.sprite.getPosition().y <= player.sprite.getPosition().y
-	 + player.sprite.getGlobalBounds().height))
+	 + player.sprite.getGlobalBounds().height)){
     b.x_dir = 1.f;
+    b.sprite.setPosition(player.sprite.getPosition().x
+			 + player.sprite.getGlobalBounds().width,
+			 b.sprite.getPosition().y);
+    b.y_dir = player.dy < 0.f ? -1.f : player.dy > 0.f ? 1.f : 0.f;
+  }
 
+  // AI left collision
+  if((b.sprite.getPosition().x + b.sprite.getGlobalBounds().width >=
+      ai.sprite.getPosition().x
+      && b.sprite.getPosition().x <=
+      ai.sprite.getPosition().x + ai.sprite.getGlobalBounds().width)
+     && (b.sprite.getPosition().y + b.sprite.getGlobalBounds().height
+	 >= ai.sprite.getPosition().y
+	 && b.sprite.getPosition().y <= ai.sprite.getPosition().y
+	 + ai.sprite.getGlobalBounds().height)){
+    b.x_dir = -1.f;
+    b.sprite.setPosition(ai.sprite.getPosition().x
+			 - b.sprite.getGlobalBounds().width,
+			 b.sprite.getPosition().y);
+  }
+
+  // Ball spin
+  
+  
   // Player up collision
-  if(b.sprite.getPosition().y + b.sprite.getGlobalBounds().height >=
-     player.sprite.getPosition().y
-     && (b.sprite.getPosition().x >= player.sprite.getPosition().x
-	 + player.sprite.getGlobalBounds().width
-	 && b.sprite.getPosition().x + b.sprite.getGlobalBounds().width >=
-	 player.sprite.getPosition().x))
-    b.y_dir = -0.f;
-    
+  // if(b.sprite.getPosition().y + b.sprite.getGlobalBounds().height >=
+  //    player.sprite.getPosition().y
+  //    && (b.sprite.getPosition().x >= player.sprite.getPosition().x
+  // 	 + player.sprite.getGlobalBounds().width
+  // 	 && b.sprite.getPosition().x + b.sprite.getGlobalBounds().width >=
+  // 	 player.sprite.getPosition().x))
+  //   b.y_dir = -0.f;
+ 
   // TODO(l4v): Rest of Player and AI collisions
   // TODO(l4v): Ball "spin" depending on whether the paddle was moving
   // up or down
@@ -117,7 +142,7 @@ int main(int argc, char* argv[]){
   //Memory->isInitialized++;
 
   // TODO(l4v): FIX THIS AAA!
-  window = sf::RenderWindow(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "PONG!");
+  window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "PONG!");
   
   sf::Texture paddleTexture;
   sf::Clock clock;
