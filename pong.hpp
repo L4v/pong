@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <iostream>
+#include <sys/mman.h>
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
@@ -7,8 +8,13 @@
 
 // For debugging, if the expression is false, an attempt
 // is made to write to the 0 pointer, which automatically causes
-// a crash. 
+// a crash.
+#if PONG_SLOW
 #define Assert(Expression) if(!(Expression)) {*(int*)0 = 0;}
+#else
+#define Assert(Expression)
+#endif
+
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
@@ -16,9 +22,9 @@
 #define global_variable static
 #define local_persist static
 
-#define Kibibytes(Value) ((Value)*1024)
-#define Mebibytes(Value) (Kilobytes(Value)*1024)
-#define Gigibytes(Value) (Megabytes(Value)*1024)
+#define Kibibytes(Value) ((Value)*1024LL)
+#define Mebibytes(Value) (Kibibytes(Value)*1024LL)
+#define Gibibytes(Value) (Mebibytes(Value)*1024LL)
 
 typedef int8_t int8;
 typedef int16_t int16;
@@ -34,8 +40,24 @@ typedef uint64_t uint64;
 typedef float real32;
 typedef double real64;
 
-struct game_data{
-  sf::RenderWindow* window;
+//struct game_data{
+//sf::RenderWindow* window
+//}
+
+sf::RenderWindow window;
+
+struct game_memory{
+  bool32 isInitialized;
+
+  uint64 PermanentStorageSize;
+  void* PermanentStorage;
+
+  uint64 TransientStorageSize;
+  void* TransientStorage;
+};
+
+struct game_state{
+  
 };
 
 struct paddle{
@@ -51,7 +73,7 @@ struct ball{
   real32 y_dir;
 };
 
-game_data data;
+//game_data data;
 
 // TEMP
 real32 paddleSpeed = 500.f;
