@@ -40,12 +40,9 @@ typedef uint64_t uint64;
 typedef float real32;
 typedef double real64;
 
-//struct game_data{
-//sf::RenderWindow* window
-//}
-
 sf::RenderWindow window;
 
+// TODO(l4v): Use the memory
 struct game_memory{
   bool32 isInitialized;
 
@@ -75,22 +72,14 @@ struct ball{
   real32 height;
 };
 
-//game_data data;
-
 // TEMP
-real32 paddleSpeed = 500.f;
+real32 paddleSpeed = 600.f;
 real32 maxBallSpeed = 500.f;
 real32 ballAccel = 10.f;
 
 paddle player, ai;
 ball b;
 
-// struct paddle{
-//     int x;
-//     int y;
-//     int width;
-//     int height;
-// };
-
-void RenderAndUpdate(sf::RenderWindow*, const real32& dt);
-
+void RenderAndUpdate(sf::RenderWindow*, const real32&);
+bool32 CheckCollision(real32, real32, real32, real32,
+		    real32, real32, real32, real32);
