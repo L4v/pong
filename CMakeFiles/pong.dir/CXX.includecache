@@ -17,6 +17,8 @@ iostream
 -
 sys/mman.h
 -
+new
+-
 SFML/Graphics.hpp
 -
 SFML/Window.hpp

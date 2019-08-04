@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <sys/mman.h>
+#include <new>
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>

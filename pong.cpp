@@ -16,6 +16,8 @@ void RenderAndUpdate(game_memory* Memory, sf::RenderWindow* window, const real32
   game_state* State = (game_state*)Memory->TransientStorage;
   if(!Memory->isInitialized){
 
+    State->paddleTexture.loadFromFile("pong.hpp");
+    State->player.sprite = new(State + sizeof(sf::Texture) + sizeof(bool32))sf::Sprite(); // TODO(l4v): AAAAAA
     State->player.sprite.setTexture(State->paddleTexture);
     State->ai.sprite.setTexture(State->paddleTexture);
     State->b.sprite.setTexture(State->paddleTexture);
