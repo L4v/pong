@@ -4,7 +4,7 @@ project(pong)
 
 
 set(EXECUTABLE_NAME "pong")
-set(CMAKE_CXX_FLAGS "-DPONG_INTERNAL -DPONG_SLOW")
+set(CMAKE_CXX_FLAGS "-g -DPONG_INTERNAL -DPONG_SLOW")
 
 file(GLOB HEADERS "*.hpp")
 file(GLOB SOURCES "*.cpp")

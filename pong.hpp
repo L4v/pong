@@ -42,20 +42,13 @@ typedef double real64;
 
 sf::RenderWindow window;
 
+
+// paddle player, ai;
+// ball b;
+
+
 // TODO(l4v): Use the memory
-struct game_memory{
-  bool32 isInitialized;
 
-  uint64 PermanentStorageSize;
-  void* PermanentStorage;
-
-  uint64 TransientStorageSize;
-  void* TransientStorage;
-};
-
-struct game_state{
-  
-};
 
 struct paddle{
   sf::Sprite sprite;
@@ -72,13 +65,28 @@ struct ball{
   real32 height;
 };
 
+struct game_state{
+  sf::Texture paddleTexture;
+  bool32 isInitialized;
+  paddle player;
+  paddle ai;
+  ball b;
+};
+
+struct game_memory{
+  bool32 isInitialized;
+
+  uint64 PermanentStorageSize;
+  void* PermanentStorage;
+
+  uint64 TransientStorageSize;
+  void* TransientStorage;
+};
+
 // TEMP
 real32 paddleSpeed = 600.f;
 real32 maxBallSpeed = 500.f;
 real32 ballAccel = 10.f;
-
-paddle player, ai;
-ball b;
 
 void RenderAndUpdate(sf::RenderWindow*, const real32&);
 bool32 CheckCollision(real32, real32, real32, real32,
