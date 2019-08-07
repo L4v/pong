@@ -1,1 +1,1 @@
-/usr/bin/c++  -g -DPONG_INTERNAL -DPONG_SLOW  -rdynamic CMakeFiles/pong.dir/pong.cpp.o  -o pong -lsfml-system -lsfml-window -lsfml-graphics 
+/usr/bin/c++  -g -DPONG_INTERNAL -DPONG_SLOW -I/usr/include/SDL2 -D_REENTRANT -L/usr/lib -pthread -lSDL2  -rdynamic CMakeFiles/pong.dir/pong.cpp.o  -o pong -lsfml-system -lsfml-window -lsfml-graphics 

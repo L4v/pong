@@ -7,10 +7,14 @@ set(CMAKE_DEPENDS_GENERATOR "Unix Makefiles")
 # The top level Makefile was generated from the following files:
 set(CMAKE_MAKEFILE_DEPENDS
   "CMakeCache.txt"
-  "CMakeFiles/3.15.0/CMakeCCompiler.cmake"
-  "CMakeFiles/3.15.0/CMakeCXXCompiler.cmake"
-  "CMakeFiles/3.15.0/CMakeSystem.cmake"
+  "CMakeFiles/3.15.1/CMakeCCompiler.cmake"
+  "CMakeFiles/3.15.1/CMakeCXXCompiler.cmake"
+  "CMakeFiles/3.15.1/CMakeSystem.cmake"
   "CMakeLists.txt"
+  "/usr/lib64/cmake/SDL2/SDL2Config.cmake"
+  "/usr/lib64/cmake/SDL2/SDL2ConfigVersion.cmake"
+  "/usr/lib64/cmake/SDL2/SDL2Targets-noconfig.cmake"
+  "/usr/lib64/cmake/SDL2/SDL2Targets.cmake"
   "/usr/share/cmake-3.15/Modules/CMakeCInformation.cmake"
   "/usr/share/cmake-3.15/Modules/CMakeCXXInformation.cmake"
   "/usr/share/cmake-3.15/Modules/CMakeCheckCompilerFlagCommonPatterns.cmake"

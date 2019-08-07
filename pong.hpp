@@ -3,6 +3,8 @@
 #include <sys/mman.h>
 #include <new>
 
+#include "SDL.h"
+
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <SFML/System.hpp>

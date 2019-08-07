@@ -17,7 +17,7 @@ void RenderAndUpdate(game_memory* Memory, sf::RenderWindow* window, const real32
   if(!Memory->isInitialized){
 
     State->paddleTexture.loadFromFile("pong.hpp");
-    State->player.sprite = new(State + sizeof(sf::Texture) + sizeof(bool32))sf::Sprite(); // TODO(l4v): AAAAAA
+    State->player.sprite.setTexture(State->paddleTexture);
     State->player.sprite.setTexture(State->paddleTexture);
     State->ai.sprite.setTexture(State->paddleTexture);
     State->b.sprite.setTexture(State->paddleTexture);
@@ -179,7 +179,7 @@ void RenderAndUpdate(game_memory* Memory, sf::RenderWindow* window, const real32
 
 int main(int argc, char* argv[]){
 #if PONG_INTERNAL
-  void *BaseAddress = (void *)Gibibytes(250);
+  void *BaseAddress = (void *)(0);//Gibibytes(250);
 #else
   void *BaseAddress = (void *)(0);
 #endif
@@ -202,12 +202,16 @@ int main(int argc, char* argv[]){
     // NOTE(l4v): Check if memory allocation failed 
     Assert(GameMemory.PermanentStorage);  
     Assert(GameMemory.TransientStorage);
-  // GameState->window = sf::RenderWindow(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "PONG!");
-  //GameState->window.setFrameRateLimit(60);
-  // Memory->isInitialized++;
 
+    if(SDL_Init(SDL_INIT_VIDEO) != 0)
+      {
+	// TODO(l4v): Handle SDL_Init fail
+      }
+
+  // SFML OLD CODE
+  /*
   window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "PONG!");
-  
+
   // sf::Texture paddleTexture;
   sf::Clock clock;
   real32 dt = 0.f; // Time elapsed between frames
@@ -242,5 +246,6 @@ int main(int argc, char* argv[]){
   munmap(GameMemory.PermanentStorage, GameMemory.PermanentStorageSize);
   munmap(GameMemory.TransientStorage, GameMemory.TransientStorageSize);
   //free(data.window);
+  */
   return 0;
 }
