@@ -10,13 +10,32 @@ bool32 CheckCollision(real32 x1, real32 y1, real32 w1, real32 h1,
   return false;
 }
 
+void drawTriangle(){
+  glClearColor(0.4, 0.4, 0.4, 0.4);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glColor3f(1.0, 1.0, 1.0);
+    glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
+
+        glBegin(GL_TRIANGLES);
+                glVertex3f(-0.7, 0.7, 0);
+                glVertex3f(0.7, 0.7, 0);
+                glVertex3f(0, -1, 0);
+        glEnd();
+
+    glFlush();
+}
+
 void RenderAndUpdate(game_memory* Memory, sf::RenderWindow* window, const real32& dt){
   // // TODO(l4v): Use the game state
   
   game_state* State = (game_state*)Memory->TransientStorage;
   if(!Memory->isInitialized){
-
+    
     State->paddleTexture.loadFromFile("paddle.png");
+    // std::cout << &State->paddleTexture << " " << &(State->isInitialized) << " "
+    // 	      << &State->player << " " << &State->ai << std::endl;
+    
     State->player.sprite.setTexture(State->paddleTexture);
     State->player.sprite.setTexture(State->paddleTexture);
     State->ai.sprite.setTexture(State->paddleTexture);
@@ -203,7 +222,7 @@ int main(int argc, char* argv[]){
     Assert(GameMemory.PermanentStorage);  
     Assert(GameMemory.TransientStorage);
   // Memory->isInitialized++;
-
+    /*
   window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "PONG!");
   window.setFramerateLimit(60);
   
@@ -241,5 +260,15 @@ int main(int argc, char* argv[]){
   munmap(GameMemory.PermanentStorage, GameMemory.PermanentStorageSize);
   munmap(GameMemory.TransientStorage, GameMemory.TransientStorageSize);
   //free(data.window);
+  */
+
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_SINGLE);
+    glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+    glutInitWindowPosition(100, 100);
+    glutCreateWindow("Pong");
+    glutDisplayFunc(drawTriangle);
+    glutMainLoop();
+    
   return 0;
 }

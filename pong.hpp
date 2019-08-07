@@ -3,6 +3,9 @@
 #include <sys/mman.h>
 #include <new>
 
+#include "GL/freeglut.h"
+#include "GL/gl.h"
+
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <SFML/System.hpp>
@@ -54,6 +57,8 @@ sf::RenderWindow window;
 struct paddle{
   sf::Sprite sprite;
   real32 dy = 1.f;
+  real32 x;
+  real32 y;
   real32 width;
   real32 height;
 };
@@ -62,6 +67,8 @@ struct ball{
   sf::Sprite sprite;
   real32 dx;
   real32 dy;
+  real32 x;
+  real32 y;
   real32 width;
   real32 height;
 };
