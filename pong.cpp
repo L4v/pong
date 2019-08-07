@@ -16,8 +16,8 @@ void RenderAndUpdate(game_memory* Memory, sf::RenderWindow* window, const real32
   game_state* State = (game_state*)Memory->TransientStorage;
   if(!Memory->isInitialized){
 
-    State->paddleTexture.loadFromFile("pong.hpp");
-    State->player.sprite = new(State + sizeof(sf::Texture) + sizeof(bool32))sf::Sprite(); // TODO(l4v): AAAAAA
+    State->paddleTexture.loadFromFile("paddle.png");
+    State->player.sprite.setTexture(State->paddleTexture);
     State->player.sprite.setTexture(State->paddleTexture);
     State->ai.sprite.setTexture(State->paddleTexture);
     State->b.sprite.setTexture(State->paddleTexture);
@@ -202,11 +202,10 @@ int main(int argc, char* argv[]){
     // NOTE(l4v): Check if memory allocation failed 
     Assert(GameMemory.PermanentStorage);  
     Assert(GameMemory.TransientStorage);
-  // GameState->window = sf::RenderWindow(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "PONG!");
-  //GameState->window.setFrameRateLimit(60);
   // Memory->isInitialized++;
 
   window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "PONG!");
+  window.setFramerateLimit(60);
   
   // sf::Texture paddleTexture;
   sf::Clock clock;
