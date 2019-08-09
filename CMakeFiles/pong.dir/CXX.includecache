@@ -19,10 +19,12 @@ sys/mman.h
 -
 new
 -
-SFML/Graphics.hpp
--
-SFML/Window.hpp
--
-SFML/System.hpp
--
+SDL2/SDL.h
+/home/hk-47/workspace/op/cpp/games/pong/SDL2/SDL.h
+GL/gl.h
+/home/hk-47/workspace/op/cpp/games/pong/GL/gl.h
+GL/glu.h
+/home/hk-47/workspace/op/cpp/games/pong/GL/glu.h
+GL/glx.h
+/home/hk-47/workspace/op/cpp/games/pong/GL/glx.h
 

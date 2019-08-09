@@ -3,12 +3,14 @@
 #include <sys/mman.h>
 #include <new>
 
-#include "GL/freeglut.h"
+#include "SDL2/SDL.h"
 #include "GL/gl.h"
+#include "GL/glu.h"
+#include "GL/glx.h"
 
-#include <SFML/Graphics.hpp>
-#include <SFML/Window.hpp>
-#include <SFML/System.hpp>
+// #include <SFML/Graphics.hpp>
+// #include <SFML/Window.hpp>
+// #include <SFML/System.hpp>
 
 // For debugging, if the expression is false, an attempt
 // is made to write to the 0 pointer, which automatically causes
@@ -44,9 +46,6 @@ typedef uint64_t uint64;
 typedef float real32;
 typedef double real64;
 
-sf::RenderWindow window;
-
-
 // paddle player, ai;
 // ball b;
 
@@ -55,7 +54,7 @@ sf::RenderWindow window;
 
 
 struct paddle{
-  sf::Sprite sprite;
+  //  sf::Sprite sprite;
   real32 dy = 1.f;
   real32 x;
   real32 y;
@@ -64,7 +63,7 @@ struct paddle{
 };
 
 struct ball{
-  sf::Sprite sprite;
+  //  sf::Sprite sprite;
   real32 dx;
   real32 dy;
   real32 x;
@@ -74,7 +73,7 @@ struct ball{
 };
 
 struct game_state{
-  sf::Texture paddleTexture;
+  //  sf::Texture paddleTexture;
   bool32 isInitialized;
   paddle player;
   paddle ai;
@@ -96,6 +95,6 @@ real32 paddleSpeed = 600.f;
 real32 maxBallSpeed = 500.f;
 real32 ballAccel = 10.f;
 
-void RenderAndUpdate(sf::RenderWindow*, const real32&);
-bool32 CheckCollision(real32, real32, real32, real32,
-		    real32, real32, real32, real32);
+//void RenderAndUpdate(sf::RenderWindow*, const real32&);
+//bool32 CheckCollision(real32, real32, real32, real32,
+//		    real32, real32, real32, real32);
