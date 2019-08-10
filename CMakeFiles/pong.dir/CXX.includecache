@@ -21,6 +21,8 @@ new
 -
 SDL2/SDL.h
 /home/hk-47/workspace/op/cpp/games/pong/SDL2/SDL.h
+GL/glew.h
+/home/hk-47/workspace/op/cpp/games/pong/GL/glew.h
 GL/gl.h
 /home/hk-47/workspace/op/cpp/games/pong/GL/gl.h
 GL/glu.h

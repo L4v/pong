@@ -79,6 +79,11 @@ pong_EXTERNAL_OBJECTS =
 
 pong: CMakeFiles/pong.dir/pong.cpp.o
 pong: CMakeFiles/pong.dir/build.make
+pong: /usr/lib/libGL.so
+pong: /usr/lib/libGLU.so
+pong: /usr/lib/libglut.so
+pong: /usr/lib/libXmu.so
+pong: /usr/lib/libXi.so
 pong: CMakeFiles/pong.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/hk-47/workspace/op/cpp/games/pong/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable pong"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/pong.dir/link.txt --verbose=$(VERBOSE)

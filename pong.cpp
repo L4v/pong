@@ -223,6 +223,12 @@ int main(int argc, char* argv[]){
 #else
   void *BaseAddress = (void *)(0);
 #endif
+
+  SDL_Window* window;
+  SDL_GLContext glContext;
+  SDL_Event sdlEvent;
+
+  bool quit;
   
   // NOTE(l4v): Allocating new memory and subdividing it into parts
   game_memory GameMemory{};
@@ -281,55 +287,51 @@ int main(int argc, char* argv[]){
   munmap(GameMemory.TransientStorage, GameMemory.TransientStorageSize);
   //free(data.window);
   */
-  
-  uint32 WindowFlags = SDL_WINDOW_OPENGL;
-  SDL_Window *Window = SDL_CreateWindow("OpenGL Test", 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, WindowFlags);
-  Assert(Window);
-  SDL_GLContext Context = SDL_GL_CreateContext(Window);
-  
-  bool32 Running = 1;
-  bool32 FullScreen = 0;
-  while (Running)
+  quit = false;
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+  if(SDL_Init(SDL_INIT_VIDEO) > 0)
     {
-      SDL_Event Event;
-      while (SDL_PollEvent(&Event))
-	{
-	  if (Event.type == SDL_KEYDOWN)
-	    {
-	      switch (Event.key.keysym.sym)
-		{
-		case SDLK_ESCAPE:
-		  Running = 0;
-		  break;
-		case 'f':
-		  FullScreen = !FullScreen;
-		  if (FullScreen)
-		    {
-		      SDL_SetWindowFullscreen(Window, WindowFlags | SDL_WINDOW_FULLSCREEN_DESKTOP);
-		    }
-		  else
-		    {
-		      SDL_SetWindowFullscreen(Window, WindowFlags);
-		    }
-		  break;
-		default:
-		  break;
-		}
-	    }
-	  else if (Event.type == SDL_QUIT)
-	    {
-	      Running = 0;
-	    }
-	}
-
-      glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-      glClearColor(0.f, 0.f, 0.f, 0.f);
-      glClear(GL_COLOR_BUFFER_BIT);
-
-      draw_triangle();
-      
-      SDL_GL_SwapWindow(Window);
+      std::cout << "SDL could not be initialized" << std::endl;
+      return 1;
     }
+
+  // Create the window
+  window = SDL_CreateWindow("Pong!", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+
+  if(!window)
+    {
+      std::cout << "Window was not created" << std::endl;
+      return 1;
+    }
+
+  glContext = SDL_GL_CreateContext(window);
+
+  if(!glContext)
+    {
+      std::cout << "GL context could not be created" << std::endl;
+      return 1;
+    }
+  // Initialize GLEW
+  glewInit();
+
+  while(!quit)
+    {
+      while(SDL_PollEvent(&sdlEvent))
+	{
+	  if(sdlEvent.type == SDL_QUIT)
+	    quit = true;
+	}
+    }
+
+  // Destroy window
+  SDL_DestroyWindow(window);
+  window = 0;
+
+  SDL_Quit();
+  
   return 0;
 
 }
