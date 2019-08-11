@@ -4,12 +4,13 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/hk-47/workspace/op/cpp/games/pong/pong.cpp" "/home/hk-47/workspace/op/cpp/games/pong/CMakeFiles/pong.dir/pong.cpp.o"
+  "/home/jigsaw/workspace/cpp/games/pong/pong.cpp" "/home/jigsaw/workspace/cpp/games/pong/CMakeFiles/pong.dir/pong.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
+  "/usr/include/SDL2"
   )
 
 # Targets to which this target links.

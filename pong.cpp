@@ -323,8 +323,24 @@ int main(int argc, char* argv[]){
 	{
 	  if(sdlEvent.type == SDL_QUIT)
 	    quit = true;
+
+	  if(sdlEvent.type == SDL_KEYDOWN)
+	    if(sdlEvent.key.keysym.sym == SDLK_ESCAPE)
+	      quit = true;
 	}
+
+      // NOTE(l4v): Set background to black color
+      glClearColor(0.f, 0.f, 0.f, 0.f);
+      // NOTE(l4v): Clear the color buffer
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      
+      draw_triangle();
+      // NOTE(l4v): Swap the buffers
+      SDL_GL_SwapWindow(window);
+      
     }
+
+  // CONTINUE ON https://learnopengl.com/Getting-started/Hello-Triangle
 
   // Destroy window
   SDL_DestroyWindow(window);

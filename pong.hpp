@@ -5,15 +5,15 @@
 
 #include "SDL2/SDL.h"
 #include "GL/glew.h"
-#include "GL/gl.h"
-#include "GL/glu.h"
-#include "GL/glx.h"
+// #include "GL/gl.h"
+// #include "GL/glu.h"
+// #include "GL/glx.h"
 
 // #include <SFML/Graphics.hpp>
 // #include <SFML/Window.hpp>
 // #include <SFML/System.hpp>
 
-// For debugging, if the expression is false, an attempt
+// NOTE(l4v): For debugging, if the expression is false, an attempt
 // is made to write to the 0 pointer, which automatically causes
 // a crash.
 #if PONG_SLOW
@@ -72,7 +72,6 @@ struct ball{
   real32 width;
   real32 height;
 };
-
 struct game_state{
   //  sf::Texture paddleTexture;
   bool32 isInitialized;

@@ -1,1 +1,1 @@
-/usr/bin/c++  -g -DPONG_INTERNAL -DPONG_SLOW  -rdynamic CMakeFiles/pong.dir/pong.cpp.o  -o pong -lGL -lGLU -lglut -lXmu -lXi 
+/usr/bin/c++  -g -DPONG_INTERNAL -DPONG_SLOW  -rdynamic CMakeFiles/pong.dir/pong.cpp.o  -o pong -lGL -lGLU -lSDL2 /usr/lib/libGLEW.so 
