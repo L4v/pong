@@ -196,26 +196,20 @@
 //   window->display();
 // }
 
-void draw_triangle(){
-  /*  clear all pixels  */
-    glClear (GL_COLOR_BUFFER_BIT);
 
-/*  draw white polygon (rectangle) with corners at
- *  (0.25, 0.25, 0.0) and (0.75, 0.75, 0.0)  
- */
-    glColor3f (1.0, 1.0, 1.0);
-    glBegin(GL_POLYGON);
-        glVertex3f (0.25, 0.25, 0.0);
-        glVertex3f (0.75, 0.25, 0.0);
-        glVertex3f (0.75, 0.75, 0.0);
-
-    glEnd();
-
-/*  don't wait!  
- *  start processing buffered OpenGL routines 
- */
-    glFlush ();
-}
+// NOTE(l4v): These should be loaded from a seperate file
+const char *vertexShaderSource = "#version 330 core\n"
+    "layout (location = 0) in vec3 aPos;\n"
+    "void main()\n"
+    "{\n"
+    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+    "}\0";
+const char *fragmentShaderSource = "#version 330 core\n"
+    "out vec4 FragColor;\n"
+    "void main()\n"
+    "{\n"
+    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+    "}\n\0";
 
 int main(int argc, char* argv[]){
 #if PONG_INTERNAL
@@ -231,23 +225,23 @@ int main(int argc, char* argv[]){
   bool quit;
   
   // NOTE(l4v): Allocating new memory and subdividing it into parts
-  game_memory GameMemory{};
-  GameMemory.PermanentStorageSize = Mebibytes(60);
-  GameMemory.TransientStorageSize = Mebibytes(100);
+  // game_memory GameMemory{};
+  // GameMemory.PermanentStorageSize = Mebibytes(60);
+  // GameMemory.TransientStorageSize = Mebibytes(100);
   
-  uint64 TotalStorageSize = GameMemory.PermanentStorageSize
-    + GameMemory.TransientStorageSize;
-  GameMemory.PermanentStorage = mmap(BaseAddress, TotalStorageSize,
-				     PROT_READ | PROT_WRITE,
-				     MAP_ANONYMOUS | MAP_PRIVATE,
-				     -1,
-				     0);
-  GameMemory.TransientStorage = (uint8 *)(GameMemory.PermanentStorage)
-    + GameMemory.PermanentStorageSize;
+  // uint64 TotalStorageSize = GameMemory.PermanentStorageSize
+  //   + GameMemory.TransientStorageSize;
+  // GameMemory.PermanentStorage = mmap(BaseAddress, TotalStorageSize,
+  // 				     PROT_READ | PROT_WRITE,
+  // 				     MAP_ANONYMOUS | MAP_PRIVATE,
+  // 				     -1,
+  // 				     0);
+  // GameMemory.TransientStorage = (uint8 *)(GameMemory.PermanentStorage)
+  //   + GameMemory.PermanentStorageSize;
   
-  // NOTE(l4v): Check if memory allocation failed 
-  Assert(GameMemory.PermanentStorage);  
-  Assert(GameMemory.TransientStorage);
+  // // NOTE(l4v): Check if memory allocation failed 
+  // Assert(GameMemory.PermanentStorage);  
+  // Assert(GameMemory.TransientStorage);
   // Memory->isInitialized++;
   /*
     window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "PONG!");
@@ -316,7 +310,102 @@ int main(int argc, char* argv[]){
     }
   // Initialize GLEW
   glewInit();
+  glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
+  // NOTE(l4v): Array of vertices for the triangle
+  real32 vertices[] = {
+		       -0.5f, -0.5f, 0.0f,
+		       0.5f, -0.5f, 0.0f,
+		       0.0f, 0.5f, 0.0f
+  };
+
+  // NOTE(l4v): Creating a VBO (vertex buffer object)
+  uint32 VBO;
+  glGenBuffers(1, &VBO);
+
+  // NOTE(l4v): Bind current VBO to GL_ARRAY_BUFFER
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+  // NOTE(l4v): Copy the triangle vertex data to the buffer
+  // GL_STATIC_DRAW - when the data very rarely changes
+  // GL_DYNAMIC_DRAW - when the data changes very often
+  // GL_STREAM_DRAW - when the data changes every time it's drawn
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+  // NOTE(l4v): Creating a vertex shader object
+  uint32 vertexShader;
+  vertexShader = glCreateShader(GL_VERTEX_SHADER);
+
+  // NOTE(l4v): Attaching shader source code to the shader object
+  glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+  glCompileShader(vertexShader);
+
+  // NOTE(l4v): Check if shader compilation failed
+  int success;
+  char infoLog[512];
+  glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+  if(!success)
+    {
+      glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+      std::cout << "ERROR::SHADER::VERTEX:COMPILATION_FAILED" << std::endl << infoLog << std::endl;
+    }
+
+  uint32 fragmentShader;
+  fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+  glCompileShader(fragmentShader);
+
+  glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+  if(!success)
+    {
+      glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+      std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED" << std::endl << infoLog << std::endl;
+    }
+
+  // NOTE(l4v): Creating a shader program object
+  uint32 shaderProgram;
+  shaderProgram = glCreateProgram();
+
+  // NOTE(l4v): Attaching and linking shaders to the program
+  glAttachShader(shaderProgram, vertexShader);
+  glAttachShader(shaderProgram, fragmentShader);
+  glLinkProgram(shaderProgram);
+
+  // NOTE(l4v): Check for program linking failure
+  glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+  if(!success)
+    {
+      glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+      std::cout << "ERROR::SHADER_PROGRAM::LINKING_FAILED" << std::endl << infoLog << std::endl;
+    }
+
+  // NOTE(l4v): Activate the shader program
+  glUseProgram(shaderProgram);
+
+  // NOTE(l4v): Deleting objects since they're not required after linking them
+  // to the shader program
+  glDeleteShader(vertexShader);
+  glDeleteShader(fragmentShader);
+
+  // NOTE(l4v): Telling OpenGL how to interpret the vertex data in memory
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+  glEnableVertexAttribArray(0);
+
+  // NOTE(l4v): Generating a VAO
+  uint32 VAO;
+  glGenVertexArrays(1, &VAO);
+
+  // NOTE(l4v): Init code, done only once, unless object changes frequently
+  // 1. bind VAO
+  glBindVertexArray(VAO);
+  // 2. copy vertices array in a buffer for OpenGL to use
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+  // 3. set vertex attribute pointers
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+  glEnableVertexAttribArray(0);
+
+  
   while(!quit)
     {
       while(SDL_PollEvent(&sdlEvent))
@@ -329,14 +418,21 @@ int main(int argc, char* argv[]){
 	      quit = true;
 	}
 
-      // NOTE(l4v): Set background to black color
-      glClearColor(0.f, 0.f, 0.f, 0.f);
+      // NOTE(l4v): Set background to black c// olor
+      glClearColor(0.2f, 0.3f, 0.3f, 1.f);
       // NOTE(l4v): Clear the color buffer
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+      // NOTE(l4v): Draw the triangle
+      glUseProgram(shaderProgram);
+      glBindVertexArray(VAO);
+      glDrawArrays(GL_TRIANGLES, 0, 3);
       
-      draw_triangle();
-      // NOTE(l4v): Swap the buffers
+      // draw_triangle();
+      // // NOTE(l4v): Swap the buffers
       SDL_GL_SwapWindow(window);
+
+      
       
     }
 
@@ -345,6 +441,9 @@ int main(int argc, char* argv[]){
   // Destroy window
   SDL_DestroyWindow(window);
   window = 0;
+  
+  glDeleteVertexArrays(1, &VAO);
+  glDeleteBuffers(1, &VBO);
 
   SDL_Quit();
   
