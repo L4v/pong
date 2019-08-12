@@ -211,6 +211,14 @@ const char *fragmentShaderSource = "#version 330 core\n"
     "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
     "}\n\0";
 
+const char *fragmentShaderSource1 = "#version 330 core\n"
+    "out vec4 FragColor;\n"
+    "void main()\n"
+    "{\n"
+    "   FragColor = vec4(0.0f, 0.5f, 0.5f, 1.0f);\n"
+    "}\n\0";
+
+
 int main(int argc, char* argv[]){
 #if PONG_INTERNAL
   void *BaseAddress = (void *)Gibibytes(250);
@@ -377,6 +385,16 @@ int main(int argc, char* argv[]){
   glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
   glCompileShader(fragmentShader);
 
+  // NOTE(l4v): 2 shaders for exercise
+  uint32 fragmentShaders[2];
+  fragmentShaders[0] = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(fragmentShaders[0], 1, &fragmentShaderSource1, 0);
+  glCompileShader(fragmentShaders[0]);
+
+  fragmentShaders[1] = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(fragmentShaders[1], 1, &fragmentShaderSource, 0);
+  glCompileShader(fragmentShaders[1]);
+  
   glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
   if(!success)
     {
@@ -388,6 +406,13 @@ int main(int argc, char* argv[]){
   uint32 shaderProgram;
   shaderProgram = glCreateProgram();
 
+  uint32 shaderProgram1;
+  shaderProgram1 = glCreateProgram();
+
+  glAttachShader(shaderProgram1, vertexShader);
+  glAttachShader(shaderProgram1, fragmentShaders[0]);
+  glLinkProgram(shaderProgram1);
+  
   // NOTE(l4v): Attaching and linking shaders to the program
   glAttachShader(shaderProgram, vertexShader);
   glAttachShader(shaderProgram, fragmentShader);
@@ -405,7 +430,6 @@ int main(int argc, char* argv[]){
   // to the shader program
   glDeleteShader(vertexShader);
   glDeleteShader(fragmentShader);
-
 
   // NOTE(l4v): Generating a VAO
   uint32 VAO;
@@ -483,10 +507,14 @@ int main(int argc, char* argv[]){
       // NOTE(l4v): Drawing from the element buffer using indices
       // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
+      glUseProgram(shaderProgram1);
+      
       // NOTE(l4v): Drawing first triangle
       glBindVertexArray(VAOs[0]);
       glDrawArrays(GL_TRIANGLES, 0, 3);
 
+      glUseProgram(shaderProgram);
+      
       // NOTE(l4v): Drawing second triangle
       glBindVertexArray(VAOs[1]);
       glDrawArrays(GL_TRIANGLES, 0, 3);
