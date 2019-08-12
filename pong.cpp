@@ -292,8 +292,9 @@ int main(int argc, char* argv[]){
       return 1;
     }
 
-  // Create the window
-  window = SDL_CreateWindow("Pong!", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+  // NOTE(l4v): Create the window
+  window = SDL_CreateWindow("Pong!", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_OPENGL
+			    | SDL_WINDOW_SHOWN);
 
   if(!window)
     {
@@ -308,30 +309,51 @@ int main(int argc, char* argv[]){
       std::cout << "GL context could not be created" << std::endl;
       return 1;
     }
-  // Initialize GLEW
+  // NOTE(l4v): Initialize GLEW
   glewInit();
   glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-  // NOTE(l4v): Array of vertices for the triangle
+  // NOTE(l4v): Array of vertices for the triangle (changed to draw 2 triangles for rectangle)
   real32 vertices[] = {
-		       -0.5f, -0.5f, 0.0f,
-		       0.5f, -0.5f, 0.0f,
-		       0.0f, 0.5f, 0.0f
+		       0.5f, 0.5f, 0.f,
+		       0.5f, -0.5f, 0.f,
+		       -0.5f, -0.5f, 0.f,
+		       -0.5f, 0.5f, 0.f
   };
 
+  // NOTE(l4v): For the 2 triangle exercise
+  real32 triangle1[] = {
+			// First
+			-0.5f, 0.f, 0.f, // BL1
+			-0.25f, 0.5f, 0.f, // M1
+			0.f, 0.f, 0.f, // BR1 / 2
+  };
+
+  real32 triangle2[] = {
+			// Second
+			0.f, 0.f, 0.f,
+			0.25f, 0.5f, 0.f, // M2
+			0.5f, 0.f, 0.f // BR2
+  };
+
+  // NOTE(l4v): Indices for the EBO to draw a rectangle from 2 triangles
+  uint32 indices[] = {
+		      0, 1, 3,
+		      1, 2, 3
+  };
+
+
+  // NOTE(l4v): Creating the element buffer object, EBO
+  uint32 EBO;
+  glGenBuffers(1, &EBO);
+  
   // NOTE(l4v): Creating a VBO (vertex buffer object)
   uint32 VBO;
   glGenBuffers(1, &VBO);
 
-  // NOTE(l4v): Bind current VBO to GL_ARRAY_BUFFER
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-  // NOTE(l4v): Copy the triangle vertex data to the buffer
-  // GL_STATIC_DRAW - when the data very rarely changes
-  // GL_DYNAMIC_DRAW - when the data changes very often
-  // GL_STREAM_DRAW - when the data changes every time it's drawn
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
+  uint32 VBOs[2];
+  glGenBuffers(2, VBOs);
+  
   // NOTE(l4v): Creating a vertex shader object
   uint32 vertexShader;
   vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -379,32 +401,59 @@ int main(int argc, char* argv[]){
       std::cout << "ERROR::SHADER_PROGRAM::LINKING_FAILED" << std::endl << infoLog << std::endl;
     }
 
-  // NOTE(l4v): Activate the shader program
-  glUseProgram(shaderProgram);
-
   // NOTE(l4v): Deleting objects since they're not required after linking them
   // to the shader program
   glDeleteShader(vertexShader);
   glDeleteShader(fragmentShader);
 
-  // NOTE(l4v): Telling OpenGL how to interpret the vertex data in memory
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-  glEnableVertexAttribArray(0);
 
   // NOTE(l4v): Generating a VAO
   uint32 VAO;
   glGenVertexArrays(1, &VAO);
 
+  uint32 VAOs[2];
+  glGenVertexArrays(2, VAOs);
+  
   // NOTE(l4v): Init code, done only once, unless object changes frequently
   // 1. bind VAO
   glBindVertexArray(VAO);
   // 2. copy vertices array in a buffer for OpenGL to use
+
+  // NOTE(l4v): Bind current VBO to GL_ARRAY_BUFFER
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  
+  // NOTE(l4v): Binding the EBO
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
+  // NOTE(l4v): Copy the triangle vertex data to the buffer
+  // GL_STATIC_DRAW - when the data very rarely changes
+  // GL_DYNAMIC_DRAW - when the data changes very often
+  // GL_STREAM_DRAW - when the data changes every time it's drawn
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+  // NOTE(l4v): Copying the indices to the buffer (changed for exercise)
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+  
   // 3. set vertex attribute pointers
+  // NOTE(l4v): Telling OpenGL how to interpret the vertex data in memory
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
 
+  // NOTE(l4v): Binding and copying data for the first triangle
+  glBindVertexArray(VAOs[0]);
+  glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(triangle1), triangle1, GL_STATIC_DRAW);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
+  glEnableVertexAttribArray(0);
+
+  // NOTE(l4v): Binding and copying data for the second triangle
+  glBindVertexArray(VAOs[1]);
+  glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(triangle2), triangle2, GL_STATIC_DRAW);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
+  glEnableVertexAttribArray(0);
+
+  
   
   while(!quit)
     {
@@ -424,12 +473,29 @@ int main(int argc, char* argv[]){
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       // NOTE(l4v): Draw the triangle
+
+      // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+      
+      // NOTE(l4v): Activate the shader program
       glUseProgram(shaderProgram);
-      glBindVertexArray(VAO);
+      // glBindVertexArray(VAO);
+      // glDrawArrays(GL_TRIANGLES, 0, 6); // Was used for drawing a single triangle from vertices
+      // NOTE(l4v): Drawing from the element buffer using indices
+      // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+      // NOTE(l4v): Drawing first triangle
+      glBindVertexArray(VAOs[0]);
       glDrawArrays(GL_TRIANGLES, 0, 3);
+
+      // NOTE(l4v): Drawing second triangle
+      glBindVertexArray(VAOs[1]);
+      glDrawArrays(GL_TRIANGLES, 0, 3);
+
+      // NOTE(l4v): Unbinding the array
+      glBindVertexArray(0);
       
       // draw_triangle();
-      // // NOTE(l4v): Swap the buffers
+      // Note(l4v): Swap the buffers
       SDL_GL_SwapWindow(window);
 
       
