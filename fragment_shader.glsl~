@@ -1,0 +1,8 @@
+ //#version 300 es
+ #version 330 core\n
+  out highp vec4 FragColor;
+  in highp vec3 triangleColor;
+  void main()
+{
+	FragColor = vec4(triangleColor, 1.0);
+};

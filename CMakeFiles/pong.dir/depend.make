@@ -3,4 +3,5 @@
 
 CMakeFiles/pong.dir/pong.cpp.o: pong.cpp
 CMakeFiles/pong.dir/pong.cpp.o: pong.hpp
+CMakeFiles/pong.dir/pong.cpp.o: stb_image.h
 

@@ -1,5 +1,8 @@
 #include "pong.hpp"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 // bool32 CheckCollision(real32 x1, real32 y1, real32 w1, real32 h1,
 // 		    real32 x2, real32 y2, real32 w2, real32 h2)
 // {
@@ -196,35 +199,33 @@
 //   window->display();
 // }
 
+const char* load_shader(const char* path)
+{
+  char* shaderText = 0;
+  int64 length;
+
+  FILE* file = fopen(path, "rb");
+  
+  if(file)
+    {
+      fseek(file, 0, SEEK_END);
+      length = ftell(file);
+      fseek(file, 0, SEEK_SET);
+      shaderText = (char*)malloc(length); // TODO(l4v): Use memory arenas
+      if(shaderText)
+	{
+	  fread(shaderText, 1, length, file);
+	}
+      fclose(file);
+    }
+  return shaderText;
+}
 
 // NOTE(l4v): These should be loaded from a seperate file
 // NOTE(l4v): "#version 300 es\n" should be "#version 330 core\n"
-const char *vertexShaderSource = //"#version 300 es\n"
-    "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    "}\0";
-const char *fragmentShaderSource =
-  //  "#version 300 es\n"
-  "#version 330 core\n"
-  "out highp vec4 FragColor;\n"
-  "uniform highp vec4 triangleColor;\n"
-  "void main()\n"
-  "{\n"
-  "   FragColor = triangleColor;\n//vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-  "}\n\0";
 
-const char *fragmentShaderSource1 =
-  //  "#version 300 es\n"
-    "#version 330 core\n"
-  "out highp vec4 FragColor;\n"
-  "void main()\n"
-  "{\n"
-  "   FragColor = vec4(0.0f, 0.5f, 0.5f, 1.0f);\n"
-  "}\n\0";
-
+const char* fragmentShaderSource = load_shader("fragment_shader.glsl");
+const char* vertexShaderSource = load_shader("vertex_shader.glsl");
 
 int main(int argc, char* argv[]){
 #if PONG_INTERNAL
@@ -260,42 +261,42 @@ int main(int argc, char* argv[]){
   // Memory->isInitialized++;
   /*
     window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "PONG!");
-  window.setFramerateLimit(60);
+    window.setFramerateLimit(60);
   
-  // sf::Texture paddleTexture;
-  sf::Clock clock;
-  real32 dt = 0.f; // Time elapsed between frames
+    // sf::Texture paddleTexture;
+    sf::Clock clock;
+    real32 dt = 0.f; // Time elapsed between frames
   
-  // Main game loop
+    // Main game loop
   
-  // real32 lastTime = 0.f;
-  // real32 currentTime = 0.f;
-  // real32 fps = 0.f;
-  // sf::Clock fpsClock;
-  while (window.isOpen())
-  {
+    // real32 lastTime = 0.f;
+    // real32 currentTime = 0.f;
+    // real32 fps = 0.f;
+    // sf::Clock fpsClock;
+    while (window.isOpen())
+    {
   
-  RenderAndUpdate(&GameMemory, &window, dt);
+    RenderAndUpdate(&GameMemory, &window, dt);
   
-  // Get elapsed time
-  dt = clock.getElapsedTime().asSeconds();
+    // Get elapsed time
+    dt = clock.getElapsedTime().asSeconds();
   
-  // Reset the clock
-  clock.restart();
-  // currentTime = fpsClock.restart().asSeconds();
-  // fps = 1.f / currentTime;
-  // lastTime = currentTime;
+    // Reset the clock
+    clock.restart();
+    // currentTime = fpsClock.restart().asSeconds();
+    // fps = 1.f / currentTime;
+    // lastTime = currentTime;
   
-  // std::cout << "S:" << fps << std::endl;
-  // system("clear");
+    // std::cout << "S:" << fps << std::endl;
+    // system("clear");
   
-  }
+    }
   
   
-  munmap(GameMemory.PermanentStorage, GameMemory.PermanentStorageSize);
-  munmap(GameMemory.TransientStorage, GameMemory.TransientStorageSize);
-  //free(data.window);
-  */
+    munmap(GameMemory.PermanentStorage, GameMemory.PermanentStorageSize);
+    munmap(GameMemory.TransientStorage, GameMemory.TransientStorageSize);
+    //free(data.window);
+    */
   quit = false;
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
@@ -328,27 +329,12 @@ int main(int argc, char* argv[]){
   glewInit();
   glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-  // NOTE(l4v): Array of vertices for the triangle (changed to draw 2 triangles for rectangle)
+  // NOTE(l4v): Array of vertices for rectangle
   real32 vertices[] = {
 		       0.5f, 0.5f, 0.f,
 		       0.5f, -0.5f, 0.f,
 		       -0.5f, -0.5f, 0.f,
 		       -0.5f, 0.5f, 0.f
-  };
-
-  // NOTE(l4v): For the 2 triangle exercise
-  real32 triangle1[] = {
-			// First
-			-0.5f, 0.f, 0.f, // BL1
-			-0.25f, 0.5f, 0.f, // M1
-			0.f, 0.f, 0.f, // BR1 / 2
-  };
-
-  real32 triangle2[] = {
-			// Second
-			0.f, 0.f, 0.f,
-			0.25f, 0.5f, 0.f, // M2
-			0.5f, 0.f, 0.f // BR2
   };
 
   // NOTE(l4v): Indices for the EBO to draw a rectangle from 2 triangles
@@ -365,14 +351,13 @@ int main(int argc, char* argv[]){
   // NOTE(l4v): Creating a VBO (vertex buffer object)
   uint32 VBO;
   glGenBuffers(1, &VBO);
-
-  uint32 VBOs[2];
-  glGenBuffers(2, VBOs);
   
   // NOTE(l4v): Creating a vertex shader object
   uint32 vertexShader;
   vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
+  //  const char* vertexShaderSource = load_shader("vertex_shader.glsl");
+  
   // NOTE(l4v): Attaching shader source code to the shader object
   glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
   glCompileShader(vertexShader);
@@ -386,7 +371,8 @@ int main(int argc, char* argv[]){
       glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
       std::cout << "ERROR::SHADER::VERTEX:COMPILATION_FAILED" << std::endl << infoLog << std::endl;
     }
-
+  //  const char* fragmentShaderSource = load_shader("fragment_shader.glsl");
+  
   uint32 fragmentShader;
   fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
   glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
@@ -395,7 +381,7 @@ int main(int argc, char* argv[]){
   // NOTE(l4v): 2 shaders for exercise
   uint32 fragmentShaders[2];
   fragmentShaders[0] = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragmentShaders[0], 1, &fragmentShaderSource1, 0);
+  glShaderSource(fragmentShaders[0], 1, &fragmentShaderSource, 0);
   glCompileShader(fragmentShaders[0]);
 
   fragmentShaders[1] = glCreateShader(GL_FRAGMENT_SHADER);
@@ -441,9 +427,6 @@ int main(int argc, char* argv[]){
   // NOTE(l4v): Generating a VAO
   uint32 VAO;
   glGenVertexArrays(1, &VAO);
-
-  uint32 VAOs[2];
-  glGenVertexArrays(2, VAOs);
   
   // NOTE(l4v): Init code, done only once, unless object changes frequently
   // 1. bind VAO
@@ -469,22 +452,6 @@ int main(int argc, char* argv[]){
   // NOTE(l4v): Telling OpenGL how to interpret the vertex data in memory
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
-
-  // NOTE(l4v): Binding and copying data for the first triangle
-  glBindVertexArray(VAOs[0]);
-  glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(triangle1), triangle1, GL_STATIC_DRAW);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
-  glEnableVertexAttribArray(0);
-
-  // NOTE(l4v): Binding and copying data for the second triangle
-  glBindVertexArray(VAOs[1]);
-  glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(triangle2), triangle2, GL_STATIC_DRAW);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
-  glEnableVertexAttribArray(0);
-
-  real32 time = 0.f;
   
   while(!quit)
     {
@@ -509,31 +476,17 @@ int main(int argc, char* argv[]){
       
       // NOTE(l4v): Activate the shader program
       glUseProgram(shaderProgram);
-      // glBindVertexArray(VAO);
+      glBindVertexArray(VAO);
       // glDrawArrays(GL_TRIANGLES, 0, 6); // Was used for drawing a single triangle from vertices
       // NOTE(l4v): Drawing from the element buffer using indices
-      // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+      glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
       glUseProgram(shaderProgram1);
       
-      // NOTE(l4v): Drawing first triangle
-      glBindVertexArray(VAOs[0]);
-      glDrawArrays(GL_TRIANGLES, 0, 3);
-
-      // NOTE(l4v): Changing triangle color
-      glUseProgram(shaderProgram);
-      time += 0.01f;
-      real32 timeValue = SDL_GetTicks();
-      real32 greenValue = (sin(time))
-	/ 2.0f + 0.5f;
-
-      int32 vertexColorLocation = glGetUniformLocation(shaderProgram,
-						       "triangleColor");
-  
-      glUniform4f(vertexColorLocation, 0.f, greenValue, 0.f, 1.f);
-      // NOTE(l4v): Drawing second triangle
-      glBindVertexArray(VAOs[1]);
-      glDrawArrays(GL_TRIANGLES, 0, 3);
+      real32 offset = 0.f;
+      real32 vertexOffsetLocation = glGetUniformLocation(shaderProgram,
+							 "offset");
+      glUniform1f(vertexOffsetLocation, offset);
       
       // NOTE(l4v): Unbinding the array
       glBindVertexArray(0);
@@ -542,8 +495,6 @@ int main(int argc, char* argv[]){
       // Note(l4v): Swap the buffers
       SDL_GL_SwapWindow(window);      
     }
-
-  // CONTINUE ON https://learnopengl.com/Getting-started/Hello-Triangle
 
   // Destroy window
   SDL_DestroyWindow(window);
