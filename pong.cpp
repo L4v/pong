@@ -198,25 +198,32 @@
 
 
 // NOTE(l4v): These should be loaded from a seperate file
-const char *vertexShaderSource = "#version 330 core\n"
+// NOTE(l4v): "#version 300 es\n" should be "#version 330 core\n"
+const char *vertexShaderSource = //"#version 300 es\n"
+    "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
     "void main()\n"
     "{\n"
     "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
     "}\0";
-const char *fragmentShaderSource = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-    "}\n\0";
+const char *fragmentShaderSource =
+  //  "#version 300 es\n"
+  "#version 330 core\n"
+  "out highp vec4 FragColor;\n"
+  "uniform highp vec4 triangleColor;\n"
+  "void main()\n"
+  "{\n"
+  "   FragColor = triangleColor;\n//vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+  "}\n\0";
 
-const char *fragmentShaderSource1 = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vec4(0.0f, 0.5f, 0.5f, 1.0f);\n"
-    "}\n\0";
+const char *fragmentShaderSource1 =
+  //  "#version 300 es\n"
+    "#version 330 core\n"
+  "out highp vec4 FragColor;\n"
+  "void main()\n"
+  "{\n"
+  "   FragColor = vec4(0.0f, 0.5f, 0.5f, 1.0f);\n"
+  "}\n\0";
 
 
 int main(int argc, char* argv[]){
@@ -291,7 +298,7 @@ int main(int argc, char* argv[]){
   */
   quit = false;
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
   if(SDL_Init(SDL_INIT_VIDEO) > 0)
@@ -477,7 +484,7 @@ int main(int argc, char* argv[]){
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
 
-  
+  real32 time = 0.f;
   
   while(!quit)
     {
@@ -513,21 +520,27 @@ int main(int argc, char* argv[]){
       glBindVertexArray(VAOs[0]);
       glDrawArrays(GL_TRIANGLES, 0, 3);
 
+      // NOTE(l4v): Changing triangle color
       glUseProgram(shaderProgram);
-      
+      time += 0.01f;
+      real32 timeValue = SDL_GetTicks();
+      real32 greenValue = (sin(time))
+	/ 2.0f + 0.5f;
+
+      int32 vertexColorLocation = glGetUniformLocation(shaderProgram,
+						       "triangleColor");
+  
+      glUniform4f(vertexColorLocation, 0.f, greenValue, 0.f, 1.f);
       // NOTE(l4v): Drawing second triangle
       glBindVertexArray(VAOs[1]);
       glDrawArrays(GL_TRIANGLES, 0, 3);
-
+      
       // NOTE(l4v): Unbinding the array
       glBindVertexArray(0);
       
       // draw_triangle();
       // Note(l4v): Swap the buffers
-      SDL_GL_SwapWindow(window);
-
-      
-      
+      SDL_GL_SwapWindow(window);      
     }
 
   // CONTINUE ON https://learnopengl.com/Getting-started/Hello-Triangle
