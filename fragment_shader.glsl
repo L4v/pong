@@ -1,15 +1,14 @@
- //#version 300 es
  #version 330 core
  
   out highp vec4 FragColor;
   
-  in highp vec3 trianglePos;
-  in highp vec3 triangleColor;
-  in highp vec2 texCoord;
+  in highp vec2 TexCoord;
 
-  uniform sampler2D Tex;
+  uniform sampler2D texture1;
+  uniform sampler2D texture2;
 
   void main()
 {
-	FragColor = texture(Tex, texCoord) * vec4(triangleColor, 1.0);
+	FragColor = mix(texture(texture1, TexCoord), texture(texture2,
+		  TexCoord), 0.2);
 }

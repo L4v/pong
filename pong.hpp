@@ -3,15 +3,13 @@
 #include <sys/mman.h>
 #include <new>
 
+// TODO(l4v): Use our own or a C library
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "SDL2/SDL.h"
 #include "GL/glew.h"
-// #include "GL/gl.h"
-// #include "GL/glu.h"
-// #include "GL/glx.h"
-
-// #include <SFML/Graphics.hpp>
-// #include <SFML/Window.hpp>
-// #include <SFML/System.hpp>
 
 // NOTE(l4v): For debugging, if the expression is false, an attempt
 // is made to write to the 0 pointer, which automatically causes

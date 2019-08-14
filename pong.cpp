@@ -331,11 +331,11 @@ int main(int argc, char* argv[]){
 
   // NOTE(l4v): Array of vertices for rectangle
   real32 vertices[] = {
-		       // positions          // colors           // texture coords
-		       0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
-		       0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-		       -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
-		       -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
+		       // positions         // texture coords
+		       0.5f,  0.5f, 0.0f,   1.f, 1.f, // top right
+		       0.5f, -0.5f, 0.0f,   1.f, 0.f, // bottom right
+		       -0.5f, -0.5f, 0.0f,  0.f, 0.f, // bottom left
+		       -0.5f,  0.5f, 0.0f,  0.f, 1.f  // top left 
   };
 
   // NOTE(l4v): Indices for the EBO to draw a rectangle from 2 triangles
@@ -434,35 +434,38 @@ int main(int argc, char* argv[]){
   // NOTE(l4v): Telling OpenGL how to interpret the vertex data in memory
 
   // Positions
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
 
-  // Colors
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
+  // Texture coords
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
 			(void*) (3 * sizeof(float)));
   glEnableVertexAttribArray(1);
 
-  // Texture coords
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
-			(void*) (6 * sizeof(float)));
-  glEnableVertexAttribArray(2);
-
+  // NOTE(l4v): TEXTURE 1
+  
   // NOTE(l4v): Binding the texture
-  uint32 texture;
-  glGenTextures(1, &texture);
-  glBindTexture(GL_TEXTURE_2D, texture);
+  uint32 texture1, texture2;
+  glGenTextures(1, &texture1);
+  glBindTexture(GL_TEXTURE_2D, texture1);
 
+  // NOTE(l4v): Tell stb to flip image on y-axis
+  stbi_set_flip_vertically_on_load(true);
+  
   // NOTE(l4v): Set wrapping and filtering options
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
+  
   // NOTE(l4v): Loading and generating the actual texture
   // Texture variables
   int32 width, height, nChannels;
   // TODO(l4v): Make use of memory arenas
-  uint8 *data = stbi_load("container.jpg", &width, &height, &nChannels, 0);
+  uint8 *data;
+
+  // NOTE(l4v): Loading first image
+  data = stbi_load("container.jpg", &width, &height, &nChannels, 0);
   if(data)
     {
       glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -474,7 +477,30 @@ int main(int argc, char* argv[]){
     }
   // NOTE(l4v): Frees the image data
   stbi_image_free(data);
+
+  // NOTE(l4v): TEXTURE 2
+  glGenTextures(1, &texture2);
+  glBindTexture(GL_TEXTURE_2D, texture2);
+
+  // NOTE(l4v): Set wrapping and filtering options
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   
+  // NOTE(l4v): Loading second image
+  data = stbi_load("awesomeface.png", &width, &height, &nChannels, 0);
+  if(data)
+    {
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+      glGenerateMipmap(GL_TEXTURE_2D);
+    }
+  stbi_image_free(data);
+
+  glUseProgram(shaderProgram);
+  glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 0);
+  glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 1);
+
   while(!quit)
     {
       while(SDL_PollEvent(&sdlEvent))
@@ -483,23 +509,32 @@ int main(int argc, char* argv[]){
 	    quit = true;
 
 	  if(sdlEvent.type == SDL_KEYDOWN)
-	    if(sdlEvent.key.keysym.sym == SDLK_ESCAPE)
-	      quit = true;
+	    {
+	      if(sdlEvent.key.keysym.sym == SDLK_ESCAPE)
+		quit = true;
+	    }
 	}
 
-      // NOTE(l4v): Set background to black c// olor
+      // NOTE(l4v): Set background to black color
       glClearColor(0.2f, 0.3f, 0.3f, 1.f);
+      
       // NOTE(l4v): Clear the color buffer
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       
       // NOTE(l4v): Activate the shader program
       glUseProgram(shaderProgram);
 
-      // NOTE(l4v): Setting active texture unit
+      // NOTE(l4v): First moves the container and then rotates it (the code is read in reverse)
+      glm::mat4 trans = glm::mat4(1.f);
+      trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.f));
+      trans = glm::rotate(trans, (real32)(SDL_GetTicks()) / 1000.f, glm::vec3(0.f, 0.f, 1.f));
+      glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "transform"), 1, GL_FALSE, glm::value_ptr(trans));      
+      // NOTE(l4v): Setting active texture unit and bind texture
       glActiveTexture(GL_TEXTURE0);
-      
-      // NOTE(l4v): Bind texture
-      glBindTexture(GL_TEXTURE_2D, texture);
+      glBindTexture(GL_TEXTURE_2D, texture1);
+
+      glActiveTexture(GL_TEXTURE1);
+      glBindTexture(GL_TEXTURE_2D, texture2);
       
       // NOTE(l4v): Bind the VAO
       glBindVertexArray(VAO);
