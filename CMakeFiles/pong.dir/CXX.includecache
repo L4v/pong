@@ -6,13 +6,13 @@
 
 #IncludeRegexTransform: 
 
-/home/hk-47/workspace/op/cpp/games/pong/pong.cpp
+/home/jigsaw/workspace/cpp/games/pong/pong.cpp
 pong.hpp
-/home/hk-47/workspace/op/cpp/games/pong/pong.hpp
+/home/jigsaw/workspace/cpp/games/pong/pong.hpp
 stb_image.h
-/home/hk-47/workspace/op/cpp/games/pong/stb_image.h
+/home/jigsaw/workspace/cpp/games/pong/stb_image.h
 
-/home/hk-47/workspace/op/cpp/games/pong/pong.hpp
+/home/jigsaw/workspace/cpp/games/pong/pong.hpp
 cstdlib
 -
 iostream
@@ -22,13 +22,13 @@ sys/mman.h
 new
 -
 SDL2/SDL.h
-/home/hk-47/workspace/op/cpp/games/pong/SDL2/SDL.h
+/home/jigsaw/workspace/cpp/games/pong/SDL2/SDL.h
 GL/glew.h
-/home/hk-47/workspace/op/cpp/games/pong/GL/glew.h
+/home/jigsaw/workspace/cpp/games/pong/GL/glew.h
 
-/home/hk-47/workspace/op/cpp/games/pong/stb_image.h
+/home/jigsaw/workspace/cpp/games/pong/stb_image.h
 stb_image.h
-/home/hk-47/workspace/op/cpp/games/pong/stb_image.h
+/home/jigsaw/workspace/cpp/games/pong/stb_image.h
 stdio.h
 -
 stdlib.h

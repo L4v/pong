@@ -331,10 +331,11 @@ int main(int argc, char* argv[]){
 
   // NOTE(l4v): Array of vertices for rectangle
   real32 vertices[] = {
-		       0.5f, 0.5f, 0.f,
-		       0.5f, -0.5f, 0.f,
-		       -0.5f, -0.5f, 0.f,
-		       -0.5f, 0.5f, 0.f
+		       // positions          // colors           // texture coords
+		       0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
+		       0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
+		       -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
+		       -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
   };
 
   // NOTE(l4v): Indices for the EBO to draw a rectangle from 2 triangles
@@ -342,7 +343,6 @@ int main(int argc, char* argv[]){
 		      0, 1, 3,
 		      1, 2, 3
   };
-
 
   // NOTE(l4v): Creating the element buffer object, EBO
   uint32 EBO;
@@ -371,22 +371,11 @@ int main(int argc, char* argv[]){
       glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
       std::cout << "ERROR::SHADER::VERTEX:COMPILATION_FAILED" << std::endl << infoLog << std::endl;
     }
-  //  const char* fragmentShaderSource = load_shader("fragment_shader.glsl");
   
   uint32 fragmentShader;
   fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
   glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
   glCompileShader(fragmentShader);
-
-  // NOTE(l4v): 2 shaders for exercise
-  uint32 fragmentShaders[2];
-  fragmentShaders[0] = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragmentShaders[0], 1, &fragmentShaderSource, 0);
-  glCompileShader(fragmentShaders[0]);
-
-  fragmentShaders[1] = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragmentShaders[1], 1, &fragmentShaderSource, 0);
-  glCompileShader(fragmentShaders[1]);
   
   glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
   if(!success)
@@ -398,13 +387,6 @@ int main(int argc, char* argv[]){
   // NOTE(l4v): Creating a shader program object
   uint32 shaderProgram;
   shaderProgram = glCreateProgram();
-
-  uint32 shaderProgram1;
-  shaderProgram1 = glCreateProgram();
-
-  glAttachShader(shaderProgram1, vertexShader);
-  glAttachShader(shaderProgram1, fragmentShaders[0]);
-  glLinkProgram(shaderProgram1);
   
   // NOTE(l4v): Attaching and linking shaders to the program
   glAttachShader(shaderProgram, vertexShader);
@@ -450,8 +432,48 @@ int main(int argc, char* argv[]){
   
   // 3. set vertex attribute pointers
   // NOTE(l4v): Telling OpenGL how to interpret the vertex data in memory
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+  // Positions
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
+
+  // Colors
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
+			(void*) (3 * sizeof(float)));
+  glEnableVertexAttribArray(1);
+
+  // Texture coords
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
+			(void*) (6 * sizeof(float)));
+  glEnableVertexAttribArray(2);
+
+  // NOTE(l4v): Binding the texture
+  uint32 texture;
+  glGenTextures(1, &texture);
+  glBindTexture(GL_TEXTURE_2D, texture);
+
+  // NOTE(l4v): Set wrapping and filtering options
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  // NOTE(l4v): Loading and generating the actual texture
+  // Texture variables
+  int32 width, height, nChannels;
+  // TODO(l4v): Make use of memory arenas
+  uint8 *data = stbi_load("container.jpg", &width, &height, &nChannels, 0);
+  if(data)
+    {
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+      glGenerateMipmap(GL_TEXTURE_2D);
+    }
+  else
+    {
+      std::cout << "ERROR::TEXTURE::FAILED_TO_LOAD" << std::endl;
+    }
+  // NOTE(l4v): Frees the image data
+  stbi_image_free(data);
   
   while(!quit)
     {
@@ -469,29 +491,22 @@ int main(int argc, char* argv[]){
       glClearColor(0.2f, 0.3f, 0.3f, 1.f);
       // NOTE(l4v): Clear the color buffer
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-      // NOTE(l4v): Draw the triangle
-
-      // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
       
       // NOTE(l4v): Activate the shader program
       glUseProgram(shaderProgram);
+
+      // NOTE(l4v): Setting active texture unit
+      glActiveTexture(GL_TEXTURE0);
+      
+      // NOTE(l4v): Bind texture
+      glBindTexture(GL_TEXTURE_2D, texture);
+      
+      // NOTE(l4v): Bind the VAO
       glBindVertexArray(VAO);
-      // glDrawArrays(GL_TRIANGLES, 0, 6); // Was used for drawing a single triangle from vertices
+      
       // NOTE(l4v): Drawing from the element buffer using indices
       glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-      glUseProgram(shaderProgram1);
       
-      real32 offset = 0.f;
-      real32 vertexOffsetLocation = glGetUniformLocation(shaderProgram,
-							 "offset");
-      glUniform1f(vertexOffsetLocation, offset);
-      
-      // NOTE(l4v): Unbinding the array
-      glBindVertexArray(0);
-      
-      // draw_triangle();
       // Note(l4v): Swap the buffers
       SDL_GL_SwapWindow(window);      
     }
