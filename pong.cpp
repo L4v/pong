@@ -331,11 +331,47 @@ int main(int argc, char* argv[]){
 
   // NOTE(l4v): Array of vertices for rectangle
   real32 vertices[] = {
-		       // positions         // texture coords
-		       0.5f,  0.5f, 0.0f,   1.f, 1.f, // top right
-		       0.5f, -0.5f, 0.0f,   1.f, 0.f, // bottom right
-		       -0.5f, -0.5f, 0.0f,  0.f, 0.f, // bottom left
-		       -0.5f,  0.5f, 0.0f,  0.f, 1.f  // top left 
+		       -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		       0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		       -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		       0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		       0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		       0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		       -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+		       -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		       -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		       -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		       0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		       0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		       0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		       0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+		       0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		       0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		       -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
   };
 
   // NOTE(l4v): Indices for the EBO to draw a rectangle from 2 triangles
@@ -501,6 +537,25 @@ int main(int argc, char* argv[]){
   glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 0);
   glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 1);
 
+  glm::mat4 model = glm::mat4(1.f);
+  glm::mat4 view = glm::mat4(1.f);
+  glm::mat4 projection;
+
+  // NOTE(l4v): Moves the world forward / camera backward
+  view = glm::translate(view, glm::vec3(0.f, 0.f, -3.f));
+
+  // NOTE(l4v): Projection matrix, gives a feeling of perspective
+  projection = glm::perspective(glm::radians(45.0f), (real32) WINDOW_WIDTH / (real32) WINDOW_HEIGHT, 0.1f, 100.0f);
+
+  int32 mLocs[3] = {
+		       glGetUniformLocation(shaderProgram, "model"),
+		       glGetUniformLocation(shaderProgram, "view"),
+		       glGetUniformLocation(shaderProgram, "projection")
+  };
+
+  // NOTE(l4v): Enables the z-buffer
+  glEnable(GL_DEPTH_TEST);
+  
   while(!quit)
     {
       while(SDL_PollEvent(&sdlEvent))
@@ -524,11 +579,18 @@ int main(int argc, char* argv[]){
       // NOTE(l4v): Activate the shader program
       glUseProgram(shaderProgram);
 
+      model = glm::rotate(model, glm::radians((float)(SDL_GetTicks() / 1000.f)), glm::vec3(0.5f, 1.0f, 0.0f));
+      
+      glUniformMatrix4fv(mLocs[0], 1, GL_FALSE, glm::value_ptr(model));
+      glUniformMatrix4fv(mLocs[1], 1, GL_FALSE, glm::value_ptr(view));
+      glUniformMatrix4fv(mLocs[2], 1, GL_FALSE, glm::value_ptr(projection));
+      
       // NOTE(l4v): First moves the container and then rotates it (the code is read in reverse)
-      glm::mat4 trans = glm::mat4(1.f);
-      trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.f));
-      trans = glm::rotate(trans, (real32)(SDL_GetTicks()) / 1000.f, glm::vec3(0.f, 0.f, 1.f));
-      glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "transform"), 1, GL_FALSE, glm::value_ptr(trans));      
+      // glm::mat4 trans = glm::mat4(1.f);
+      // trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.f));
+      // trans = glm::rotate(trans, (real32)(SDL_GetTicks()) / 1000.f, glm::vec3(0.f, 0.f, 1.f));
+      // glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "transform"), 1, GL_FALSE, glm::value_ptr(trans));
+      
       // NOTE(l4v): Setting active texture unit and bind texture
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, texture1);
@@ -540,7 +602,8 @@ int main(int argc, char* argv[]){
       glBindVertexArray(VAO);
       
       // NOTE(l4v): Drawing from the element buffer using indices
-      glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+      //      glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+      glDrawArrays(GL_TRIANGLES, 0, 36);
       
       // Note(l4v): Swap the buffers
       SDL_GL_SwapWindow(window);      
