@@ -11,5 +11,5 @@
 
   void main()
 {
-	FragColor = texture(Tex, texCoord);// * vec4(triangleColor, 1.0);
+	FragColor = texture(Tex, texCoord) * vec4(triangleColor, 1.0);
 }

@@ -6,7 +6,7 @@ layout (location = 2) in vec2 aTexCoord;
 
 out vec3 triangleColor;
 out vec3 trianglePos;
-out vec2 triangleTexCoord;
+out vec2 texCoord;
 
 void main()
 {
@@ -14,5 +14,5 @@ void main()
    gl_Position = vec4(aPos.x, aPos.y * -1.0, aPos.z, 1.0);
    triangleColor = aColor;
    trianglePos = aPos;
-   triangleTexCoord = aTexCoord;
+   texCoord = aTexCoord;
 }
