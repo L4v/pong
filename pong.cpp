@@ -374,6 +374,21 @@ int main(int argc, char* argv[]){
 		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
   };
 
+  // NOTE(l4v): Positions of 10 cubes
+  
+  glm::vec3 cubePositions[] = {
+			       glm::vec3( 0.0f,  0.0f,  0.0f), 
+			       glm::vec3( 2.0f,  5.0f, -15.0f), 
+			       glm::vec3(-1.5f, -2.2f, -2.5f),  
+			       glm::vec3(-3.8f, -2.0f, -12.3f),  
+			       glm::vec3( 2.4f, -0.4f, -3.5f),  
+			       glm::vec3(-1.7f,  3.0f, -7.5f),  
+			       glm::vec3( 1.3f, -2.0f, -2.5f),  
+			       glm::vec3( 1.5f,  2.0f, -2.5f), 
+			       glm::vec3( 1.5f,  0.2f, -1.5f), 
+			       glm::vec3(-1.3f,  1.0f, -1.5f)  
+  };
+  
   // NOTE(l4v): Indices for the EBO to draw a rectangle from 2 triangles
   uint32 indices[] = {
 		      0, 1, 3,
@@ -579,18 +594,9 @@ int main(int argc, char* argv[]){
       // NOTE(l4v): Activate the shader program
       glUseProgram(shaderProgram);
 
-      model = glm::rotate(model, glm::radians((float)(SDL_GetTicks() / 1000.f)), glm::vec3(0.5f, 1.0f, 0.0f));
-      
       glUniformMatrix4fv(mLocs[0], 1, GL_FALSE, glm::value_ptr(model));
       glUniformMatrix4fv(mLocs[1], 1, GL_FALSE, glm::value_ptr(view));
-      glUniformMatrix4fv(mLocs[2], 1, GL_FALSE, glm::value_ptr(projection));
-      
-      // NOTE(l4v): First moves the container and then rotates it (the code is read in reverse)
-      // glm::mat4 trans = glm::mat4(1.f);
-      // trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.f));
-      // trans = glm::rotate(trans, (real32)(SDL_GetTicks()) / 1000.f, glm::vec3(0.f, 0.f, 1.f));
-      // glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "transform"), 1, GL_FALSE, glm::value_ptr(trans));
-      
+      glUniformMatrix4fv(mLocs[2], 1, GL_FALSE, glm::value_ptr(projection));      
       // NOTE(l4v): Setting active texture unit and bind texture
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, texture1);
@@ -600,10 +606,20 @@ int main(int argc, char* argv[]){
       
       // NOTE(l4v): Bind the VAO
       glBindVertexArray(VAO);
-      
-      // NOTE(l4v): Drawing from the element buffer using indices
-      //      glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-      glDrawArrays(GL_TRIANGLES, 0, 36);
+
+      // NOTE(l4v): Draw 10 cubes AND ROTATE THEM
+      for(uint32 i = 0; i < 10; i ++)
+	{
+	  glm::mat4 model = glm::mat4(1.f);
+	  model = glm::translate(model, cubePositions[i]);
+	  float angle = 20.f * i;
+	  // model = glm::rotate(model, glm::radians(angle),
+	  // 		      glm::vec3(1.f, 0.3f, 0.5f));
+	  model = glm::rotate(model, glm::radians((float)(SDL_GetTicks() / 100.f)), glm::vec3(0.5f, 1.0f, 0.0f));
+	  glUniformMatrix4fv(mLocs[0], 1, GL_FALSE, glm::value_ptr(model));
+
+	  glDrawArrays(GL_TRIANGLES, 0, 36);
+	}
       
       // Note(l4v): Swap the buffers
       SDL_GL_SwapWindow(window);      
