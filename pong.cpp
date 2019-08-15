@@ -560,7 +560,7 @@ int main(int argc, char* argv[]){
   view = glm::translate(view, glm::vec3(0.f, 0.f, -3.f));
 
   // NOTE(l4v): Projection matrix, gives a feeling of perspective
-  projection = glm::perspective(glm::radians(45.0f), (real32) WINDOW_WIDTH / (real32) WINDOW_HEIGHT, 0.1f, 100.0f);
+  projection = glm::perspective(glm::radians(90.0f), (real32) WINDOW_WIDTH / (real32) WINDOW_HEIGHT, 0.1f, 100.0f);
 
   int32 mLocs[3] = {
 		       glGetUniformLocation(shaderProgram, "model"),
