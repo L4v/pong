@@ -1393,6 +1393,8 @@ glm/gtc/matrix_transform.hpp
 /home/hk-47/workspace/op/cpp/games/pong/glm/gtc/matrix_transform.hpp
 glm/gtc/type_ptr.hpp
 /home/hk-47/workspace/op/cpp/games/pong/glm/gtc/type_ptr.hpp
+x86intrin.h
+-
 SDL2/SDL.h
 /home/hk-47/workspace/op/cpp/games/pong/SDL2/SDL.h
 GL/glew.h

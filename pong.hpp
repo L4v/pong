@@ -8,6 +8,8 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
+#include <x86intrin.h>
+
 #include "SDL2/SDL.h"
 #include "GL/glew.h"
 

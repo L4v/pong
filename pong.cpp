@@ -568,11 +568,27 @@ int main(int argc, char* argv[]){
 
   // NOTE(l4v): Enables the z-buffer
   glEnable(GL_DEPTH_TEST);
-glUniformMatrix4fv(mLocs[2], 1, GL_FALSE, glm::value_ptr(projection));      
-  
-  
+  glUniformMatrix4fv(mLocs[2], 1, GL_FALSE, glm::value_ptr(projection));  
+
+  glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f,  3.0f);
+  glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+  glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f,  0.0f);
+  real32 cameraSpeed = 0.5f;
+  real32 dt = 0.f;
+  uint32 lastFrame = 0;
+  uint32 currentFrame = 0;
+  uint32 elapsed = 0;
   while(!quit)
     {
+      // NOTE(l4v): Gets delta time in milliseconds and then converts
+      // it to seconds
+      // TODO(l4v): Should this be fixed???
+      currentFrame = _rdtsc();
+      elapsed = currentFrame - lastFrame;
+      dt = ((real64)elapsed / (1000.f * 1000.f * 1000.f));
+      lastFrame = currentFrame;
+      std::cout << dt << std::endl;
+      cameraSpeed = 2.5f * dt;
       while(SDL_PollEvent(&sdlEvent))
 	{
 	  if(sdlEvent.type == SDL_QUIT)
@@ -582,18 +598,30 @@ glUniformMatrix4fv(mLocs[2], 1, GL_FALSE, glm::value_ptr(projection));
 	    {
 	      if(sdlEvent.key.keysym.sym == SDLK_ESCAPE)
 		quit = true;
+	      if(sdlEvent.key.keysym.sym == SDLK_w)
+		cameraPos += cameraSpeed * cameraFront;
+	      if(sdlEvent.key.keysym.sym == SDLK_s)
+		cameraPos -= cameraSpeed * cameraFront;
+	      if(sdlEvent.key.keysym.sym == SDLK_a)
+		cameraPos -= glm::normalize(glm::cross(cameraFront,
+						       cameraUp))
+		  * cameraSpeed;
+	      if(sdlEvent.key.keysym.sym == SDLK_d)
+		cameraPos += glm::normalize(glm::cross(cameraFront,
+						       cameraUp))
+		  * cameraSpeed;
+	      
+	      
 	    }
 	}
       
       glm::mat4 view = glm::mat4(1.f);
-      real32 camX = sin((real32)(SDL_GetTicks()) / 1000.f) * radius;
-      real32 camZ = cos((real32)(SDL_GetTicks()) / 1000.f) * radius;
 
       // NOTE(l4v): Sets the world view
       view = glm::lookAt(
-			 glm::vec3(camX, 0.f, camZ),
-			 glm::vec3(0.f, 0.f, 0.f),
-			 glm::vec3(0.f, 1.f, 0.f)
+			 cameraPos,
+			 cameraPos + cameraFront,
+			 cameraUp
 			 );
       
       // NOTE(l4v): Set background to black color
@@ -624,9 +652,8 @@ glUniformMatrix4fv(mLocs[2], 1, GL_FALSE, glm::value_ptr(projection));
 	  glm::mat4 model = glm::mat4(1.f);
 	  model = glm::translate(model, cubePositions[i]);
 	  float angle = 20.f * i;
-	  // model = glm::rotate(model, glm::radians(angle),
-	  // 		      glm::vec3(1.f, 0.3f, 0.5f));
-	  model = glm::rotate(model, glm::radians((float)(SDL_GetTicks() / 10.f)), glm::vec3((i % 2) * 1.0f, ((i+1) % 2) * 1.0f, 1.0f));
+	  model = glm::rotate(model, glm::radians(angle ),
+			      glm::vec3(1.f, 0.3f, 0.5f));
 	  glUniformMatrix4fv(mLocs[0], 1, GL_FALSE, glm::value_ptr(model));
 
 	  glDrawArrays(GL_TRIANGLES, 0, 36);
