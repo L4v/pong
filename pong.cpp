@@ -553,12 +553,10 @@ int main(int argc, char* argv[]){
   glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 1);
 
   glm::mat4 model = glm::mat4(1.f);
-  glm::mat4 view = glm::mat4(1.f);
   glm::mat4 projection;
 
-  // NOTE(l4v): Moves the world forward / camera backward
-  view = glm::translate(view, glm::vec3(0.f, 0.f, -3.f));
-
+  real32 radius = 10.f;
+  
   // NOTE(l4v): Projection matrix, gives a feeling of perspective
   projection = glm::perspective(glm::radians(90.0f), (real32) WINDOW_WIDTH / (real32) WINDOW_HEIGHT, 0.1f, 100.0f);
 
@@ -570,6 +568,8 @@ int main(int argc, char* argv[]){
 
   // NOTE(l4v): Enables the z-buffer
   glEnable(GL_DEPTH_TEST);
+glUniformMatrix4fv(mLocs[2], 1, GL_FALSE, glm::value_ptr(projection));      
+  
   
   while(!quit)
     {
@@ -584,7 +584,18 @@ int main(int argc, char* argv[]){
 		quit = true;
 	    }
 	}
+      
+      glm::mat4 view = glm::mat4(1.f);
+      real32 camX = sin((real32)(SDL_GetTicks()) / 1000.f) * radius;
+      real32 camZ = cos((real32)(SDL_GetTicks()) / 1000.f) * radius;
 
+      // NOTE(l4v): Sets the world view
+      view = glm::lookAt(
+			 glm::vec3(camX, 0.f, camZ),
+			 glm::vec3(0.f, 0.f, 0.f),
+			 glm::vec3(0.f, 1.f, 0.f)
+			 );
+      
       // NOTE(l4v): Set background to black color
       glClearColor(0.2f, 0.3f, 0.3f, 1.f);
       
@@ -596,7 +607,7 @@ int main(int argc, char* argv[]){
 
       glUniformMatrix4fv(mLocs[0], 1, GL_FALSE, glm::value_ptr(model));
       glUniformMatrix4fv(mLocs[1], 1, GL_FALSE, glm::value_ptr(view));
-      glUniformMatrix4fv(mLocs[2], 1, GL_FALSE, glm::value_ptr(projection));      
+      
       // NOTE(l4v): Setting active texture unit and bind texture
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, texture1);
@@ -615,7 +626,7 @@ int main(int argc, char* argv[]){
 	  float angle = 20.f * i;
 	  // model = glm::rotate(model, glm::radians(angle),
 	  // 		      glm::vec3(1.f, 0.3f, 0.5f));
-	  model = glm::rotate(model, glm::radians((float)(SDL_GetTicks() / 100.f)), glm::vec3(0.5f, 1.0f, 0.0f));
+	  model = glm::rotate(model, glm::radians((float)(SDL_GetTicks() / 10.f)), glm::vec3((i % 2) * 1.0f, ((i+1) % 2) * 1.0f, 1.0f));
 	  glUniformMatrix4fv(mLocs[0], 1, GL_FALSE, glm::value_ptr(model));
 
 	  glDrawArrays(GL_TRIANGLES, 0, 36);
