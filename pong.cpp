@@ -221,8 +221,43 @@ const char* load_shader(const char* path)
   return shaderText;
 }
 
-// NOTE(l4v): These should be loaded from a seperate file
-// NOTE(l4v): "#version 300 es\n" should be "#version 330 core\n"
+glm::mat4 look_at(glm::vec3 cameraPos, glm::vec3 targetPos, glm::vec3 worldUp)
+{
+  // NOTE(l4v): Calculate the normalized direction vector of the camera
+  // (the z axis)
+  glm::vec3 direction = glm::normalize(cameraPos - targetPos);
+
+  // NOTE(l4v): Calcualte the normalized right vector of the camera
+  // (the x axis)
+  glm::vec3 right = glm::normalize(glm::cross(worldUp, direction));
+
+  // NOTE(l4v): Calculate the normalized up vector of the camera
+  // (the y axis)
+  glm::vec3 up = glm::normalize(glm::cross(direction, right));
+
+  // NOTE(l4v): Translation matrix
+  glm::mat4 translation(1.f);
+  translation[3][0] = -cameraPos.x;
+  translation[3][1] = -cameraPos.y;
+  translation[3][2] = -cameraPos.z;
+
+  // NOTE(l4v): Rotation matrix
+  glm::mat4 rotation(1.f);
+  // Right
+  rotation[0][0] = right.x;
+  rotation[1][0] = right.y;
+  rotation[2][0] = right.z;
+  // Up
+  rotation[0][1] = up.x;
+  rotation[1][1] = up.y;
+  rotation[2][1] = up.z;
+  // Direction
+  rotation[0][2] = direction.x;
+  rotation[1][2] = direction.y;
+  rotation[2][2] = direction.z;
+
+  return rotation * translation;
+}
 
 const char* fragmentShaderSource = load_shader("fragment_shader.glsl");
 const char* vertexShaderSource = load_shader("vertex_shader.glsl");
@@ -604,6 +639,27 @@ int main(int argc, char* argv[]){
 
       // NOTE(l4v): Set camera speed
       camera.speed = 2.5f * dt;
+
+      // TODO(l4v): MEMORY!!!
+      const uint8* keystates;
+      keystates = SDL_GetKeyboardState(0);
+
+      // NOTE(l4v): Keyboard input irrelevant of events
+      if(keystates[SDL_SCANCODE_W])
+	camera.pos += camera.speed * camera.front;
+      if(keystates[SDL_SCANCODE_S])
+	camera.pos -= camera.speed * camera.front;
+      if(keystates[SDL_SCANCODE_A])
+	camera.pos -= glm::normalize(glm::cross(camera.front,
+						camera.up))
+	  * camera.speed;
+      if(keystates[SDL_SCANCODE_D])
+	camera.pos += glm::normalize(glm::cross(camera.front,
+						camera.up))
+	  * camera.speed;
+
+      // NOTE(l4v): Keeps the camera on xy plane
+      camera.pos.y = 0.f;
       
       while(SDL_PollEvent(&sdlEvent))
 	{
@@ -617,21 +673,7 @@ int main(int argc, char* argv[]){
 	    {
 	      if(sdlEvent.key.keysym.sym == SDLK_ESCAPE)
 		quit = true;
-	      if(sdlEvent.key.keysym.sym == SDLK_w)
-		camera.pos += camera.speed * camera.front;
-	      if(sdlEvent.key.keysym.sym == SDLK_s)
-		camera.pos -= camera.speed * camera.front;
-	      if(sdlEvent.key.keysym.sym == SDLK_a)
-		camera.pos -= glm::normalize(glm::cross(camera.front,
-						       camera.up))
-		  * camera.speed;
-	      if(sdlEvent.key.keysym.sym == SDLK_d)
-		camera.pos += glm::normalize(glm::cross(camera.front,
-						       camera.up))
-		  * camera.speed;
-	       
 	    }
-
 	  // NOTE(l4v): MOUSE MOVEMENT
 	  if(sdlEvent.type == SDL_MOUSEMOTION)
 	    {
@@ -666,7 +708,7 @@ int main(int argc, char* argv[]){
 				    (real32) WINDOW_WIDTH / (real32) WINDOW_HEIGHT, 0.1f, 100.0f);
       
       // NOTE(l4v): Sets the world view
-      camera.view = glm::lookAt(
+      camera.view = look_at(
 			 camera.pos,
 			 camera.pos + camera.front,
 			 camera.up

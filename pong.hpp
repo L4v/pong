@@ -53,6 +53,7 @@ typedef double real64;
 
 // TODO(l4v): Use the memory
 
+// TODO(l4v): Do all these belong here?
 struct camera_struct{
   glm::mat4 model;
   glm::mat4 projection;
@@ -106,6 +107,9 @@ struct game_memory{
 real32 paddleSpeed = 600.f;
 real32 maxBallSpeed = 500.f;
 real32 ballAccel = 10.f;
+
+glm::mat4 look_at(glm::vec3, glm::vec3, glm::vec3);
+const char* load_shader(const char*);
 
 //void RenderAndUpdate(sf::RenderWindow*, const real32&);
 //bool32 CheckCollision(real32, real32, real32, real32,
