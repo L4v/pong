@@ -337,6 +337,16 @@ int main(int argc, char* argv[]){
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
+  // NOTE(l4v): Disable cursor
+  SDL_ShowCursor(SDL_DISABLE);
+
+  // NOTE(l4v): Capture the mouse
+  SDL_CaptureMouse(SDL_TRUE);
+  SDL_SetRelativeMouseMode(SDL_TRUE);
+  
+  // NOTE(l4v): Enables the z-buffer
+  glEnable(GL_DEPTH_TEST);
+  
   if(SDL_Init(SDL_INIT_VIDEO) > 0)
     {
       std::cout << "SDL could not be initialized" << std::endl;
@@ -413,15 +423,7 @@ int main(int argc, char* argv[]){
   
   glm::vec3 cubePositions[] = {
 			       glm::vec3( 0.0f,  0.0f,  0.0f), 
-			       glm::vec3( 2.0f,  5.0f, -15.0f), 
-			       glm::vec3(-1.5f, -2.2f, -2.5f),  
-			       glm::vec3(-3.8f, -2.0f, -12.3f),  
-			       glm::vec3( 2.4f, -0.4f, -3.5f),  
-			       glm::vec3(-1.7f,  3.0f, -7.5f),  
-			       glm::vec3( 1.3f, -2.0f, -2.5f),  
-			       glm::vec3( 1.5f,  2.0f, -2.5f), 
-			       glm::vec3( 1.5f,  0.2f, -1.5f), 
-			       glm::vec3(-1.3f,  1.0f, -1.5f)  
+			       glm::vec3( 2.0f,  5.0f, -15.0f)
   };
   
   // NOTE(l4v): Indices for the EBO to draw a rectangle from 2 triangles
@@ -431,11 +433,10 @@ int main(int argc, char* argv[]){
   };
 
   // NOTE(l4v): Creating the element buffer object, EBO
-  uint32 EBO;
+  uint32 EBO, VBO, VAO, lightVAO;
   glGenBuffers(1, &EBO);
   
   // NOTE(l4v): Creating a VBO (vertex buffer object)
-  uint32 VBO;
   glGenBuffers(1, &VBO);
   
   // NOTE(l4v): Creating a vertex shader object
@@ -493,8 +494,8 @@ int main(int argc, char* argv[]){
   glDeleteShader(fragmentShader);
 
   // NOTE(l4v): Generating a VAO
-  uint32 VAO;
   glGenVertexArrays(1, &VAO);
+  glGenVertexArrays(1, &lightVAO);
   
   // NOTE(l4v): Init code, done only once, unless object changes frequently
   // 1. bind VAO
@@ -506,7 +507,7 @@ int main(int argc, char* argv[]){
   
   // NOTE(l4v): Binding the EBO
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-
+  
   // NOTE(l4v): Copy the triangle vertex data to the buffer
   // GL_STATIC_DRAW - when the data very rarely changes
   // GL_DYNAMIC_DRAW - when the data changes very often
@@ -519,7 +520,6 @@ int main(int argc, char* argv[]){
   // 3. set vertex attribute pointers
   // NOTE(l4v): Telling OpenGL how to interpret the vertex data in memory
 
-  // Positions
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
 
@@ -528,7 +528,14 @@ int main(int argc, char* argv[]){
 			(void*) (3 * sizeof(float)));
   glEnableVertexAttribArray(1);
 
+  glBindVertexArray(lightVAO);
+  glBindBuffer(GL_ARRAY_BUFFER);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
+			(void*)0);
+  glEnableVertexAttribArray(0);
+  
   // NOTE(l4v): TEXTURE 1
+  // --------------------
   
   // NOTE(l4v): Binding the texture
   uint32 texture1, texture2;
@@ -565,6 +572,7 @@ int main(int argc, char* argv[]){
   stbi_image_free(data);
 
   // NOTE(l4v): TEXTURE 2
+  // --------------------
   glGenTextures(1, &texture2);
   glBindTexture(GL_TEXTURE_2D, texture2);
 
@@ -588,10 +596,7 @@ int main(int argc, char* argv[]){
   glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 1);
 
   // TODO(l4v): Should group these things
-  // -----------------------------------
-  
-  // NOTE(l4v): Enables the z-buffer
-  glEnable(GL_DEPTH_TEST);
+  // ------------------------------------
 
   // NOTE(l4v): Camera variables
 
@@ -605,12 +610,15 @@ int main(int argc, char* argv[]){
   camera.up    = glm::vec3(0.0f, 1.0f,  0.0f);
   camera.speed = 0.5f;
 
-  // NOTE(l4v): Gets the locations of uniforms
+  // NOTE(l4v): Gets the locations of matrix uniforms
   int32 mLocs[3] = {
 		       glGetUniformLocation(shaderProgram, "model"),
 		       glGetUniformLocation(shaderProgram, "view"),
 		       glGetUniformLocation(shaderProgram, "projection")
   };
+
+  // NOTE(l4v): Gets the color uniforms
+  int32 cLocs[2] = {};
 
   
   // NOTE(l4v): For getting delta time
@@ -618,13 +626,6 @@ int main(int argc, char* argv[]){
   int64 now = SDL_GetPerformanceCounter();
   int64 last = 0;
 
-  // NOTE(l4v): Disable cursor
-  SDL_ShowCursor(SDL_DISABLE);
-
-  // NOTE(l4v): Capture the mouse
-  // SDL_SetWindowGrab(window, SDL_TRUE);
-  SDL_CaptureMouse(SDL_TRUE);
-  SDL_SetRelativeMouseMode(SDL_TRUE);
   real32 mouseSensitivity = 0.5f;
   real32 pitch = 0.f;
   real32 yaw = -90.f;
