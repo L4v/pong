@@ -108,8 +108,16 @@ real32 paddleSpeed = 600.f;
 real32 maxBallSpeed = 500.f;
 real32 ballAccel = 10.f;
 
+enum shader_type
+  {
+   VERTEX = 0,
+   FRAGMENT
+  };
+
 glm::mat4 look_at(glm::vec3, glm::vec3, glm::vec3);
 const char* load_shader(const char*);
+void check_shader_compilation(uint32, shader_type);
+void check_shader_program_link(uint32);
 
 //void RenderAndUpdate(sf::RenderWindow*, const real32&);
 //bool32 CheckCollision(real32, real32, real32, real32,

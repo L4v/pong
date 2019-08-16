@@ -259,8 +259,39 @@ glm::mat4 look_at(glm::vec3 cameraPos, glm::vec3 targetPos, glm::vec3 worldUp)
   return rotation * translation;
 }
 
+void check_shader_compilation(uint32 shader, shader_type type)
+{
+  // NOTE(l4v): Check if shader compilation failed
+  int32 success;
+  GLchar infoLog[512];
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+  if(!success)
+    {
+      glGetShaderInfoLog(shader, 512, NULL, infoLog);
+      std::cout <<
+	(type == VERTEX ? "ERROR::SHADER::VERTEX:COMPILATION_FAILED"
+	 : "ERROR::SHADER::FRAGMENT:COMPILATION_FAILED")
+		<< std::endl << infoLog << std::endl;
+    }  
+}
+
+void check_shader_program_link(uint32 program)
+{
+  int32 success;
+  GLchar infoLog[512];
+  // NOTE(l4v): Check for program linking failure
+  glGetProgramiv(program, GL_LINK_STATUS, &success);
+  if(!success)
+    {
+      glGetProgramInfoLog(program, 512, NULL, infoLog);
+      std::cout << "ERROR::SHADER_PROGRAM::LINKING_FAILED" << std::endl << infoLog << std::endl;
+    }
+}
+
 const char* fragmentShaderSource = load_shader("fragment_shader.glsl");
 const char* vertexShaderSource = load_shader("vertex_shader.glsl");
+const char* lightFragmentShaderSource = load_shader("light_fragment_shader.glsl");
+const char* lightVertexShaderSource = load_shader("light_vertex_shader.glsl");
 
 int main(int argc, char* argv[]){
 #if PONG_INTERNAL
@@ -335,18 +366,7 @@ int main(int argc, char* argv[]){
   quit = false;
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
-  // NOTE(l4v): Disable cursor
-  SDL_ShowCursor(SDL_DISABLE);
-
-  // NOTE(l4v): Capture the mouse
-  SDL_CaptureMouse(SDL_TRUE);
-  SDL_SetRelativeMouseMode(SDL_TRUE);
-  
-  // NOTE(l4v): Enables the z-buffer
-  glEnable(GL_DEPTH_TEST);
-  
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);  
   if(SDL_Init(SDL_INIT_VIDEO) > 0)
     {
       std::cout << "SDL could not be initialized" << std::endl;
@@ -419,120 +439,143 @@ int main(int argc, char* argv[]){
 		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
   };
 
+  real32 lampVertices[] = {
+			   -0.5f, -0.5f, -0.5f, 
+			   0.5f, -0.5f, -0.5f,  
+			   0.5f,  0.5f, -0.5f,  
+			   0.5f,  0.5f, -0.5f,  
+			   -0.5f,  0.5f, -0.5f, 
+			   -0.5f, -0.5f, -0.5f, 
+
+			   -0.5f, -0.5f,  0.5f, 
+			   0.5f, -0.5f,  0.5f,  
+			   0.5f,  0.5f,  0.5f,  
+			   0.5f,  0.5f,  0.5f,  
+			   -0.5f,  0.5f,  0.5f, 
+			   -0.5f, -0.5f,  0.5f, 
+
+			   -0.5f,  0.5f,  0.5f, 
+			   -0.5f,  0.5f, -0.5f, 
+			   -0.5f, -0.5f, -0.5f, 
+			   -0.5f, -0.5f, -0.5f, 
+			   -0.5f, -0.5f,  0.5f, 
+			   -0.5f,  0.5f,  0.5f, 
+
+			   0.5f,  0.5f,  0.5f,  
+			   0.5f,  0.5f, -0.5f,  
+			   0.5f, -0.5f, -0.5f,  
+			   0.5f, -0.5f, -0.5f,  
+			   0.5f, -0.5f,  0.5f,  
+			   0.5f,  0.5f,  0.5f,  
+
+			   -0.5f, -0.5f, -0.5f, 
+			   0.5f, -0.5f, -0.5f,  
+			   0.5f, -0.5f,  0.5f,  
+			   0.5f, -0.5f,  0.5f,  
+			   -0.5f, -0.5f,  0.5f, 
+			   -0.5f, -0.5f, -0.5f, 
+
+			   -0.5f,  0.5f, -0.5f, 
+			   0.5f,  0.5f, -0.5f,  
+			   0.5f,  0.5f,  0.5f,  
+			   0.5f,  0.5f,  0.5f,  
+			   -0.5f,  0.5f,  0.5f, 
+			   -0.5f,  0.5f, -0.5f, 
+
+  };
+  
   // NOTE(l4v): Positions of 10 cubes
   
   glm::vec3 cubePositions[] = {
-			       glm::vec3( 0.0f,  0.0f,  0.0f), 
-			       glm::vec3( 2.0f,  5.0f, -15.0f)
-  };
-  
-  // NOTE(l4v): Indices for the EBO to draw a rectangle from 2 triangles
-  uint32 indices[] = {
-		      0, 1, 3,
-		      1, 2, 3
+			       glm::vec3( 0.0f,  0.0f,  0.0f)
   };
 
-  // NOTE(l4v): Creating the element buffer object, EBO
-  uint32 EBO, VBO, VAO, lightVAO;
-  glGenBuffers(1, &EBO);
-  
-  // NOTE(l4v): Creating a VBO (vertex buffer object)
-  glGenBuffers(1, &VBO);
-  
-  // NOTE(l4v): Creating a vertex shader object
-  uint32 vertexShader;
+  // NOTE(l4v): Vertex shaders
+  // -------------------------
+  uint32 vertexShader, lightVertexShader;
   vertexShader = glCreateShader(GL_VERTEX_SHADER);
-
-  //  const char* vertexShaderSource = load_shader("vertex_shader.glsl");
+  lightVertexShader = glCreateShader(GL_VERTEX_SHADER);
   
   // NOTE(l4v): Attaching shader source code to the shader object
-  glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+  glShaderSource(vertexShader, 1, &vertexShaderSource, 0);
+  glShaderSource(lightVertexShader, 1, &lightVertexShaderSource, 0);
+  
   glCompileShader(vertexShader);
+  check_shader_compilation(vertexShader, VERTEX);
 
-  // NOTE(l4v): Check if shader compilation failed
-  int success;
-  char infoLog[512];
-  glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-  if(!success)
-    {
-      glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-      std::cout << "ERROR::SHADER::VERTEX:COMPILATION_FAILED" << std::endl << infoLog << std::endl;
-    }
-  
-  uint32 fragmentShader;
+  glCompileShader(lightVertexShader);
+  check_shader_compilation(lightVertexShader, VERTEX);
+
+  // NOTE(l4v): Fragment shaders
+  // ---------------------------
+  uint32 fragmentShader, lightFragmentShader;
   fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-  glCompileShader(fragmentShader);
+  lightFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
   
-  glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-  if(!success)
-    {
-      glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-      std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED" << std::endl << infoLog << std::endl;
-    }
+  glShaderSource(fragmentShader, 1, &fragmentShaderSource, 0);
+  glShaderSource(lightFragmentShader, 1, &lightFragmentShaderSource, 0);
+  
+  glCompileShader(fragmentShader);
+  check_shader_compilation(fragmentShader, FRAGMENT);
+  
+  glCompileShader(lightFragmentShader);
+  check_shader_compilation(lightFragmentShader, FRAGMENT);
 
   // NOTE(l4v): Creating a shader program object
-  uint32 shaderProgram;
-  shaderProgram = glCreateProgram();
+  uint32 lightingShader, lampShader;
+  lightingShader = glCreateProgram();
+  lampShader = glCreateProgram();
   
   // NOTE(l4v): Attaching and linking shaders to the program
-  glAttachShader(shaderProgram, vertexShader);
-  glAttachShader(shaderProgram, fragmentShader);
-  glLinkProgram(shaderProgram);
+  glAttachShader(lightingShader, vertexShader);
+  glAttachShader(lightingShader, fragmentShader);
+  glAttachShader(lampShader, lightVertexShader);
+  glAttachShader(lampShader, lightFragmentShader);
+  
+  glLinkProgram(lightingShader);
+  check_shader_program_link(lightingShader);
 
-  // NOTE(l4v): Check for program linking failure
-  glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-  if(!success)
-    {
-      glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-      std::cout << "ERROR::SHADER_PROGRAM::LINKING_FAILED" << std::endl << infoLog << std::endl;
-    }
-
+  glLinkProgram(lampShader);
+  check_shader_program_link(lampShader);
+  
   // NOTE(l4v): Deleting objects since they're not required after linking them
   // to the shader program
   glDeleteShader(vertexShader);
   glDeleteShader(fragmentShader);
+  glDeleteShader(lightVertexShader);
+  glDeleteShader(lightFragmentShader);
 
+  // NOTE(l4v): Creating the element buffer object, EBO
+  uint32 VBO, VAO, lightVAO, lightVBO;
+  
   // NOTE(l4v): Generating a VAO
   glGenVertexArrays(1, &VAO);
-  glGenVertexArrays(1, &lightVAO);
-  
-  // NOTE(l4v): Init code, done only once, unless object changes frequently
-  // 1. bind VAO
-  glBindVertexArray(VAO);
-  // 2. copy vertices array in a buffer for OpenGL to use
+  glGenBuffers(1, &VBO);
 
-  // NOTE(l4v): Bind current VBO to GL_ARRAY_BUFFER
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  
-  // NOTE(l4v): Binding the EBO
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  
-  // NOTE(l4v): Copy the triangle vertex data to the buffer
-  // GL_STATIC_DRAW - when the data very rarely changes
-  // GL_DYNAMIC_DRAW - when the data changes very often
-  // GL_STREAM_DRAW - when the data changes every time it's drawn
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-  // NOTE(l4v): Copying the indices to the buffer (changed for exercise)
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-  
-  // 3. set vertex attribute pointers
-  // NOTE(l4v): Telling OpenGL how to interpret the vertex data in memory
+  glBindVertexArray(VAO);
 
+  // NOTE(l4v): Telling OpenGL how to interpret the vertex data in memory
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
-
   // Texture coords
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
 			(void*) (3 * sizeof(float)));
   glEnableVertexAttribArray(1);
-
+  
+  
+  glGenVertexArrays(1, &lightVAO);
+  glGenBuffers(1, &lightVBO);
+  
+  glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(lampVertices), lampVertices, GL_STATIC_DRAW);
+  
   glBindVertexArray(lightVAO);
-  glBindBuffer(GL_ARRAY_BUFFER);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
-			(void*)0);
-  glEnableVertexAttribArray(0);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+  glEnableVertexAttribArray(0);  
   
   // NOTE(l4v): TEXTURE 1
   // --------------------
@@ -591,15 +634,24 @@ int main(int argc, char* argv[]){
     }
   stbi_image_free(data);
 
-  glUseProgram(shaderProgram);
-  glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 0);
-  glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 1);
+  glUseProgram(lightingShader);
+  glUniform1i(glGetUniformLocation(lightingShader, "texture1"), 0);
+  glUniform1i(glGetUniformLocation(lightingShader, "texture2"), 1);
 
+  // NOTE(l4v): Disable cursor
+  SDL_ShowCursor(SDL_DISABLE);
+
+  // NOTE(l4v): Capture the mouse
+  SDL_CaptureMouse(SDL_TRUE);
+  SDL_SetRelativeMouseMode(SDL_TRUE);
+
+  // NOTE(l4v): Enables the z-buffer
+  glEnable(GL_DEPTH_TEST);  
+  
   // TODO(l4v): Should group these things
   // ------------------------------------
 
   // NOTE(l4v): Camera variables
-
   camera_struct camera;
   camera.model = glm::mat4(1.f);
   camera.projection;
@@ -611,15 +663,29 @@ int main(int argc, char* argv[]){
   camera.speed = 0.5f;
 
   // NOTE(l4v): Gets the locations of matrix uniforms
-  int32 mLocs[3] = {
-		       glGetUniformLocation(shaderProgram, "model"),
-		       glGetUniformLocation(shaderProgram, "view"),
-		       glGetUniformLocation(shaderProgram, "projection")
+  int32 mLocs[5] = {
+		       glGetUniformLocation(lightingShader, "model"),
+		       glGetUniformLocation(lightingShader, "view"),
+		       glGetUniformLocation(lightingShader, "projection"),
+		       glGetUniformLocation(lightingShader, "objectColor"),
+		       glGetUniformLocation(lightingShader, "lightColor")
   };
 
-  // NOTE(l4v): Gets the color uniforms
-  int32 cLocs[2] = {};
+  // NOTE(l4v): Gets the light uniforms
+  int32 lightLocs[5] = {
+		    glGetUniformLocation(lampShader, "model"),
+		    glGetUniformLocation(lampShader, "view"),
+		    glGetUniformLocation(lampShader, "projection"),
+		    glGetUniformLocation(lightingShader, "objectColor"),
+		    glGetUniformLocation(lightingShader, "lightColor")
+		    
+  };
 
+  // NOTE(l4v): Colors
+  glm::vec3 objectColor = glm::vec3(1.f, 0.5f, 0.31f);
+  glm::vec3 lightColor = glm::vec3(1.f, 1.f, 1.f);
+  
+  glm::vec3 lightPos(1.2f, 1.f, 2.f);
   
   // NOTE(l4v): For getting delta time
   real64 dt = 0.0;
@@ -720,13 +786,20 @@ int main(int argc, char* argv[]){
       
       // NOTE(l4v): Clear the color buffer
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      
-      // NOTE(l4v): Activate the shader program
-      glUseProgram(shaderProgram);
 
+
+      // NOTE(l4v): Cube
+      // ---------------
+      
+      // NOTE(l4v): Lighting
+      glUseProgram(lightingShader);
+      
       glUniformMatrix4fv(mLocs[0], 1, GL_FALSE, glm::value_ptr(camera.model));
       glUniformMatrix4fv(mLocs[1], 1, GL_FALSE, glm::value_ptr(camera.view));
       glUniformMatrix4fv(mLocs[2], 1, GL_FALSE, glm::value_ptr(camera.projection));
+      glUniform3fv(mLocs[3], 1, glm::value_ptr(objectColor));
+      glUniform3fv(mLocs[4], 1, glm::value_ptr(lightColor));
+
       
       // NOTE(l4v): Setting active texture unit and bind texture
       glActiveTexture(GL_TEXTURE0);
@@ -738,18 +811,32 @@ int main(int argc, char* argv[]){
       // NOTE(l4v): Bind the VAO
       glBindVertexArray(VAO);
 
-      // NOTE(l4v): Draw 10 cubes AND ROTATE THEM
-      for(uint32 i = 0; i < 10; i ++)
-	{
-	  glm::mat4 model = glm::mat4(1.f);
-	  model = glm::translate(model, cubePositions[i]);
-	  float angle = 20.f * i;
-	  model = glm::rotate(model, glm::radians(angle ),
-			      glm::vec3(1.f, 0.3f, 0.5f));
-	  glUniformMatrix4fv(mLocs[0], 1, GL_FALSE, glm::value_ptr(model));
+      // NOTE(l4v): Draw cube
+      glm::mat4 model = glm::mat4(1.f);
+      model = glm::translate(model, cubePositions[0]);
+      model = glm::rotate(model, glm::radians(0.f),
+			  glm::vec3(1.f, 0.3f, 0.5f));
+      glUniformMatrix4fv(mLocs[0], 1, GL_FALSE, glm::value_ptr(model));
 
-	  glDrawArrays(GL_TRIANGLES, 0, 36);
-	}
+      glDrawArrays(GL_TRIANGLES, 0, 36);
+
+      // NOTE(l4v): Lamp
+      // ----------------
+      glUseProgram(lampShader);
+      glUniformMatrix4fv(lightLocs[0], 1, GL_FALSE, glm::value_ptr(camera.model));
+      
+      model = glm::mat4(1.f);
+      model = glm::translate(model, lightPos);
+      model = glm::scale(model, glm::vec3(0.2f));
+      
+      glUniformMatrix4fv(lightLocs[0], 1, GL_FALSE, glm::value_ptr(camera.model));
+      glUniformMatrix4fv(lightLocs[1], 1, GL_FALSE, glm::value_ptr(camera.view));
+      glUniformMatrix4fv(lightLocs[2], 1, GL_FALSE, glm::value_ptr(camera.projection));
+      glUniform3fv(lightLocs[3], 1, glm::value_ptr(objectColor));
+      glUniform3fv(lightLocs[4], 1, glm::value_ptr(lightColor));
+
+      glBindVertexArray(lightVAO);
+      glDrawArrays(GL_TRIANGLES, 0, 36);
       
       // Note(l4v): Swap the buffers
       SDL_GL_SwapWindow(window);      
@@ -760,6 +847,7 @@ int main(int argc, char* argv[]){
   window = 0;
   
   glDeleteVertexArrays(1, &VAO);
+  glDeleteVertexArrays(1, &lightVAO);
   glDeleteBuffers(1, &VBO);
 
   SDL_Quit();
