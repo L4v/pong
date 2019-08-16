@@ -552,76 +552,124 @@ int main(int argc, char* argv[]){
   glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 0);
   glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 1);
 
-  glm::mat4 model = glm::mat4(1.f);
-  glm::mat4 projection;
-
-  real32 radius = 10.f;
+  // TODO(l4v): Should group these things
+  // -----------------------------------
   
-  // NOTE(l4v): Projection matrix, gives a feeling of perspective
-  projection = glm::perspective(glm::radians(90.0f), (real32) WINDOW_WIDTH / (real32) WINDOW_HEIGHT, 0.1f, 100.0f);
+  // NOTE(l4v): Enables the z-buffer
+  glEnable(GL_DEPTH_TEST);
 
+  // NOTE(l4v): Camera variables
+
+  camera_struct camera;
+  camera.model = glm::mat4(1.f);
+  camera.projection;
+  camera.view = glm::mat4(1.f);
+  
+  camera.pos   = glm::vec3(0.0f, 0.0f,  3.0f);
+  camera.front = glm::vec3(0.0f, 0.0f, -1.0f);
+  camera.up    = glm::vec3(0.0f, 1.0f,  0.0f);
+  camera.speed = 0.5f;
+
+  // NOTE(l4v): Gets the locations of uniforms
   int32 mLocs[3] = {
 		       glGetUniformLocation(shaderProgram, "model"),
 		       glGetUniformLocation(shaderProgram, "view"),
 		       glGetUniformLocation(shaderProgram, "projection")
   };
 
-  // NOTE(l4v): Enables the z-buffer
-  glEnable(GL_DEPTH_TEST);
-  glUniformMatrix4fv(mLocs[2], 1, GL_FALSE, glm::value_ptr(projection));  
+  
+  // NOTE(l4v): For getting delta time
+  real64 dt = 0.0;
+  int64 now = SDL_GetPerformanceCounter();
+  int64 last = 0;
 
-  glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f,  3.0f);
-  glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-  glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f,  0.0f);
-  real32 cameraSpeed = 0.5f;
-  real32 dt = 0.f;
-  uint32 lastFrame = 0;
-  uint32 currentFrame = 0;
-  uint32 elapsed = 0;
+  // NOTE(l4v): Disable cursor
+  SDL_ShowCursor(SDL_DISABLE);
+
+  // NOTE(l4v): Capture the mouse
+  // SDL_SetWindowGrab(window, SDL_TRUE);
+  SDL_CaptureMouse(SDL_TRUE);
+  SDL_SetRelativeMouseMode(SDL_TRUE);
+  real32 mouseSensitivity = 0.5f;
+  real32 pitch = 0.f;
+  real32 yaw = -90.f;
+  camera.fov = 45.f;
+
   while(!quit)
     {
-      // NOTE(l4v): Gets delta time in milliseconds and then converts
-      // it to seconds
-      // TODO(l4v): Should this be fixed???
-      currentFrame = _rdtsc();
-      elapsed = currentFrame - lastFrame;
-      dt = ((real64)elapsed / (1000.f * 1000.f * 1000.f));
-      lastFrame = currentFrame;
-      std::cout << dt << std::endl;
-      cameraSpeed = 2.5f * dt;
+      // NOTE(l4v): Gets the delta time
+      now = SDL_GetPerformanceCounter();
+      dt = ((real64)((now - last))) / SDL_GetPerformanceFrequency();
+      last = now;
+
+      // NOTE(l4v): Set camera speed
+      camera.speed = 2.5f * dt;
+      
       while(SDL_PollEvent(&sdlEvent))
 	{
+
+	  // NOTE(l4v): WINDOW
 	  if(sdlEvent.type == SDL_QUIT)
 	    quit = true;
 
+	  // NOTE(l4v): KEYBOARD
 	  if(sdlEvent.type == SDL_KEYDOWN)
 	    {
 	      if(sdlEvent.key.keysym.sym == SDLK_ESCAPE)
 		quit = true;
 	      if(sdlEvent.key.keysym.sym == SDLK_w)
-		cameraPos += cameraSpeed * cameraFront;
+		camera.pos += camera.speed * camera.front;
 	      if(sdlEvent.key.keysym.sym == SDLK_s)
-		cameraPos -= cameraSpeed * cameraFront;
+		camera.pos -= camera.speed * camera.front;
 	      if(sdlEvent.key.keysym.sym == SDLK_a)
-		cameraPos -= glm::normalize(glm::cross(cameraFront,
-						       cameraUp))
-		  * cameraSpeed;
+		camera.pos -= glm::normalize(glm::cross(camera.front,
+						       camera.up))
+		  * camera.speed;
 	      if(sdlEvent.key.keysym.sym == SDLK_d)
-		cameraPos += glm::normalize(glm::cross(cameraFront,
-						       cameraUp))
-		  * cameraSpeed;
-	      
-	      
+		camera.pos += glm::normalize(glm::cross(camera.front,
+						       camera.up))
+		  * camera.speed;
+	       
 	    }
+
+	  // NOTE(l4v): MOUSE MOVEMENT
+	  if(sdlEvent.type == SDL_MOUSEMOTION)
+	    {
+	      
+	      yaw += sdlEvent.motion.xrel * mouseSensitivity;
+	      pitch += -sdlEvent.motion.yrel * mouseSensitivity;
+
+	      if(pitch > 89.0f) pitch = 89.0f;
+	      if(pitch < -89.0f) pitch = -89.0f;
+
+	    }
+
+	  // NOTE(l4v): MOUSE WHEEL
+	  if(sdlEvent.type == SDL_MOUSEWHEEL)
+	    {
+	      if(sdlEvent.wheel.y > 0 && camera.fov >= 1.f && camera.fov < 45.f)
+		camera.fov += sdlEvent.wheel.y;
+	      if(sdlEvent.wheel.y < 0 && camera.fov > 1.f && camera.fov <= 45.f)
+		camera.fov += sdlEvent.wheel.y;
+	    }
+	  
 	}
       
-      glm::mat4 view = glm::mat4(1.f);
+      glm::vec3 front;
+      front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+      front.y = sin(glm::radians(pitch));
+      front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+      camera.front = glm::normalize(front);
 
+      // NOTE(l4v): Projection matrix, gives a feeling of perspective
+      camera.projection = glm::perspective(glm::radians(camera.fov),
+				    (real32) WINDOW_WIDTH / (real32) WINDOW_HEIGHT, 0.1f, 100.0f);
+      
       // NOTE(l4v): Sets the world view
-      view = glm::lookAt(
-			 cameraPos,
-			 cameraPos + cameraFront,
-			 cameraUp
+      camera.view = glm::lookAt(
+			 camera.pos,
+			 camera.pos + camera.front,
+			 camera.up
 			 );
       
       // NOTE(l4v): Set background to black color
@@ -633,8 +681,9 @@ int main(int argc, char* argv[]){
       // NOTE(l4v): Activate the shader program
       glUseProgram(shaderProgram);
 
-      glUniformMatrix4fv(mLocs[0], 1, GL_FALSE, glm::value_ptr(model));
-      glUniformMatrix4fv(mLocs[1], 1, GL_FALSE, glm::value_ptr(view));
+      glUniformMatrix4fv(mLocs[0], 1, GL_FALSE, glm::value_ptr(camera.model));
+      glUniformMatrix4fv(mLocs[1], 1, GL_FALSE, glm::value_ptr(camera.view));
+      glUniformMatrix4fv(mLocs[2], 1, GL_FALSE, glm::value_ptr(camera.projection));
       
       // NOTE(l4v): Setting active texture unit and bind texture
       glActiveTexture(GL_TEXTURE0);

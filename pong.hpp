@@ -53,6 +53,18 @@ typedef double real64;
 
 // TODO(l4v): Use the memory
 
+struct camera_struct{
+  glm::mat4 model;
+  glm::mat4 projection;
+  glm::mat4 view;
+
+  glm::vec3 pos;
+  glm::vec3 front;
+  glm::vec3 up;
+  
+  real32 speed;
+  real32 fov;
+};
 
 struct paddle{
   //  sf::Sprite sprite;
