@@ -396,93 +396,92 @@ int main(int argc, char* argv[]){
 
   // NOTE(l4v): Array of vertices for rectangle
   real32 vertices[] = {
-		       -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-		       0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		       -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+  		       -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+  		       0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+  		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+  		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+  		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+  		       -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		       0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		       0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		       0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		       -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+  		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+  		       0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+  		       0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+  		       0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+  		       -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+  		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
 
-		       -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		       -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		       -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+  		       -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+  		       -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+  		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+  		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+  		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+  		       -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		       0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		       0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		       0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+  		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+  		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+  		       0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+  		       0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+  		       0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+  		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		       0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-		       0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		       0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+  		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+  		       0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+  		       0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+  		       0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+  		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+  		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
 
-		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		       -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+  		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+  		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+  		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+  		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+  		       -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+  		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
   };
 
   real32 lampVertices[] = {
-			   -0.5f, -0.5f, -0.5f, 
-			   0.5f, -0.5f, -0.5f,  
-			   0.5f,  0.5f, -0.5f,  
-			   0.5f,  0.5f, -0.5f,  
-			   -0.5f,  0.5f, -0.5f, 
-			   -0.5f, -0.5f, -0.5f, 
+        -0.5f, -0.5f, -0.5f, 
+         0.5f, -0.5f, -0.5f,  
+         0.5f,  0.5f, -0.5f,  
+         0.5f,  0.5f, -0.5f,  
+        -0.5f,  0.5f, -0.5f, 
+        -0.5f, -0.5f, -0.5f, 
 
-			   -0.5f, -0.5f,  0.5f, 
-			   0.5f, -0.5f,  0.5f,  
-			   0.5f,  0.5f,  0.5f,  
-			   0.5f,  0.5f,  0.5f,  
-			   -0.5f,  0.5f,  0.5f, 
-			   -0.5f, -0.5f,  0.5f, 
+        -0.5f, -0.5f,  0.5f, 
+         0.5f, -0.5f,  0.5f,  
+         0.5f,  0.5f,  0.5f,  
+         0.5f,  0.5f,  0.5f,  
+        -0.5f,  0.5f,  0.5f, 
+        -0.5f, -0.5f,  0.5f, 
 
-			   -0.5f,  0.5f,  0.5f, 
-			   -0.5f,  0.5f, -0.5f, 
-			   -0.5f, -0.5f, -0.5f, 
-			   -0.5f, -0.5f, -0.5f, 
-			   -0.5f, -0.5f,  0.5f, 
-			   -0.5f,  0.5f,  0.5f, 
+        -0.5f,  0.5f,  0.5f, 
+        -0.5f,  0.5f, -0.5f, 
+        -0.5f, -0.5f, -0.5f, 
+        -0.5f, -0.5f, -0.5f, 
+        -0.5f, -0.5f,  0.5f, 
+        -0.5f,  0.5f,  0.5f, 
 
-			   0.5f,  0.5f,  0.5f,  
-			   0.5f,  0.5f, -0.5f,  
-			   0.5f, -0.5f, -0.5f,  
-			   0.5f, -0.5f, -0.5f,  
-			   0.5f, -0.5f,  0.5f,  
-			   0.5f,  0.5f,  0.5f,  
+         0.5f,  0.5f,  0.5f,  
+         0.5f,  0.5f, -0.5f,  
+         0.5f, -0.5f, -0.5f,  
+         0.5f, -0.5f, -0.5f,  
+         0.5f, -0.5f,  0.5f,  
+         0.5f,  0.5f,  0.5f,  
 
-			   -0.5f, -0.5f, -0.5f, 
-			   0.5f, -0.5f, -0.5f,  
-			   0.5f, -0.5f,  0.5f,  
-			   0.5f, -0.5f,  0.5f,  
-			   -0.5f, -0.5f,  0.5f, 
-			   -0.5f, -0.5f, -0.5f, 
+        -0.5f, -0.5f, -0.5f, 
+         0.5f, -0.5f, -0.5f,  
+         0.5f, -0.5f,  0.5f,  
+         0.5f, -0.5f,  0.5f,  
+        -0.5f, -0.5f,  0.5f, 
+        -0.5f, -0.5f, -0.5f, 
 
-			   -0.5f,  0.5f, -0.5f, 
-			   0.5f,  0.5f, -0.5f,  
-			   0.5f,  0.5f,  0.5f,  
-			   0.5f,  0.5f,  0.5f,  
-			   -0.5f,  0.5f,  0.5f, 
-			   -0.5f,  0.5f, -0.5f, 
-
-  };
+        -0.5f,  0.5f, -0.5f, 
+         0.5f,  0.5f, -0.5f,  
+         0.5f,  0.5f,  0.5f,  
+         0.5f,  0.5f,  0.5f,  
+        -0.5f,  0.5f,  0.5f, 
+        -0.5f,  0.5f, -0.5f, 
+    };
   
   // NOTE(l4v): Positions of 10 cubes
   
@@ -524,17 +523,14 @@ int main(int argc, char* argv[]){
   // NOTE(l4v): Creating a shader program object
   uint32 lightingShader, lampShader;
   lightingShader = glCreateProgram();
-  lampShader = glCreateProgram();
-  
-  // NOTE(l4v): Attaching and linking shaders to the program
   glAttachShader(lightingShader, vertexShader);
   glAttachShader(lightingShader, fragmentShader);
-  glAttachShader(lampShader, lightVertexShader);
-  glAttachShader(lampShader, lightFragmentShader);
-  
   glLinkProgram(lightingShader);
   check_shader_program_link(lightingShader);
-
+  
+  lampShader = glCreateProgram();
+  glAttachShader(lampShader, lightVertexShader);
+  glAttachShader(lampShader, lightFragmentShader);
   glLinkProgram(lampShader);
   check_shader_program_link(lampShader);
   
@@ -552,10 +548,10 @@ int main(int argc, char* argv[]){
   glGenVertexArrays(1, &VAO);
   glGenBuffers(1, &VBO);
 
+  glBindVertexArray(VAO);
+  
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-  glBindVertexArray(VAO);
 
   // NOTE(l4v): Telling OpenGL how to interpret the vertex data in memory
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
@@ -565,18 +561,16 @@ int main(int argc, char* argv[]){
 			(void*) (3 * sizeof(float)));
   glEnableVertexAttribArray(1);
   
-  
   glGenVertexArrays(1, &lightVAO);
   glGenBuffers(1, &lightVBO);
   
+  glBindVertexArray(lightVAO);
+  
   glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(lampVertices), lampVertices, GL_STATIC_DRAW);
-
-  glBindVertexArray(lightVAO);
-
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);  
-  
+
   // NOTE(l4v): TEXTURE 1
   // --------------------
   
@@ -664,20 +658,20 @@ int main(int argc, char* argv[]){
 
   // NOTE(l4v): Gets the locations of matrix uniforms
   int32 mLocs[5] = {
-		       glGetUniformLocation(lightingShader, "model"),
-		       glGetUniformLocation(lightingShader, "view"),
-		       glGetUniformLocation(lightingShader, "projection"),
-		       glGetUniformLocation(lightingShader, "objectColor"),
-		       glGetUniformLocation(lightingShader, "lightColor")
+		    glGetUniformLocation(lightingShader, "model"),
+		    glGetUniformLocation(lightingShader, "view"),
+		    glGetUniformLocation(lightingShader, "projection"),
+		    glGetUniformLocation(lightingShader, "objectColor"),
+		    glGetUniformLocation(lightingShader, "lightColor")
   };
 
   // NOTE(l4v): Gets the light uniforms
   int32 lightLocs[5] = {
-		    glGetUniformLocation(lampShader, "model"),
-		    glGetUniformLocation(lampShader, "view"),
-		    glGetUniformLocation(lampShader, "projection"),
-		    glGetUniformLocation(lightingShader, "objectColor"),
-		    glGetUniformLocation(lightingShader, "lightColor")
+			glGetUniformLocation(lampShader, "model"),
+			glGetUniformLocation(lampShader, "view"),
+			glGetUniformLocation(lampShader, "projection"),
+			glGetUniformLocation(lampShader, "objectColor"),
+			glGetUniformLocation(lampShader, "lightColor")
 		    
   };
 
@@ -793,6 +787,7 @@ int main(int argc, char* argv[]){
       
       // NOTE(l4v): Lighting
       glUseProgram(lightingShader);
+      glBindVertexArray(VAO);
       
       glUniformMatrix4fv(mLocs[0], 1, GL_FALSE, glm::value_ptr(camera.model));
       glUniformMatrix4fv(mLocs[1], 1, GL_FALSE, glm::value_ptr(camera.view));
@@ -809,7 +804,7 @@ int main(int argc, char* argv[]){
       glBindTexture(GL_TEXTURE_2D, texture2);
       
       // NOTE(l4v): Bind the VAO
-      glBindVertexArray(VAO);
+      // glBindVertexArray(VAO);
 
       // NOTE(l4v): Draw cube
       glm::mat4 model = glm::mat4(1.f);
@@ -819,11 +814,12 @@ int main(int argc, char* argv[]){
       glUniformMatrix4fv(mLocs[0], 1, GL_FALSE, glm::value_ptr(model));
 
       glDrawArrays(GL_TRIANGLES, 0, 36);
+      glActiveTexture(0);
 
       // NOTE(l4v): Lamp
       // ----------------
       glUseProgram(lampShader);
-      glUniformMatrix4fv(lightLocs[0], 1, GL_FALSE, glm::value_ptr(camera.model));
+      glBindVertexArray(lightVAO);
       
       model = glm::mat4(1.f);
       model = glm::translate(model, lightPos);
@@ -835,7 +831,6 @@ int main(int argc, char* argv[]){
       glUniform3fv(lightLocs[3], 1, glm::value_ptr(objectColor));
       glUniform3fv(lightLocs[4], 1, glm::value_ptr(lightColor));
 
-      glBindVertexArray(lightVAO);
       glDrawArrays(GL_TRIANGLES, 0, 36);
       
       // Note(l4v): Swap the buffers
