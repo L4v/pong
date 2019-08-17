@@ -55,10 +55,6 @@ typedef double real64;
 
 // TODO(l4v): Do all these belong here?
 struct camera_struct{
-  glm::mat4 model;
-  glm::mat4 projection;
-  glm::mat4 view;
-
   glm::vec3 pos;
   glm::vec3 front;
   glm::vec3 up;

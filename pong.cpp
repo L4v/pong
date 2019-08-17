@@ -288,10 +288,10 @@ void check_shader_program_link(uint32 program)
     }
 }
 
-const char* fragmentShaderSource = load_shader("fragment_shader.glsl");
-const char* vertexShaderSource = load_shader("vertex_shader.glsl");
-const char* lightFragmentShaderSource = load_shader("light_fragment_shader.glsl");
-const char* lightVertexShaderSource = load_shader("light_vertex_shader.glsl");
+const char* fragmentShaderSource = load_shader("cube.fs");
+const char* vertexShaderSource = load_shader("cube.vs");
+const char* lightFragmentShaderSource = load_shader("light.fs");
+const char* lightVertexShaderSource = load_shader("light.vs");
 
 int main(int argc, char* argv[]){
 #if PONG_INTERNAL
@@ -396,92 +396,48 @@ int main(int argc, char* argv[]){
 
   // NOTE(l4v): Array of vertices for rectangle
   real32 vertices[] = {
-  		       -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-  		       0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-  		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-  		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-  		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-  		       -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+  		       -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,0.f, 0.f, -1.f,
+  		       0.5f, -0.5f, -0.5f,  1.0f, 0.0f,	0.f, 0.f, -1.f,
+  		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f,	0.f, 0.f, -1.f,
+  		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f,	0.f, 0.f, -1.f,
+  		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,0.f, 0.f, -1.f,
+  		       -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,0.f, 0.f, -1.f,
 
-  		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-  		       0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-  		       0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-  		       0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-  		       -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-  		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+  		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.f, 0.f, 1.f,
+  		       0.5f, -0.5f,  0.5f,  1.0f, 0.0f,	 0.f, 0.f, 1.f,
+  		       0.5f,  0.5f,  0.5f,  1.0f, 1.0f,	 0.f, 0.f, 1.f,
+  		       0.5f,  0.5f,  0.5f,  1.0f, 1.0f,	 0.f, 0.f, 1.f,
+  		       -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.f, 0.f, 1.f,
+  		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.f, 0.f, 1.f,
 
-  		       -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-  		       -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-  		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-  		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-  		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-  		       -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+  		       -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, -1.f, 0.f, 0.f,
+  		       -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, -1.f, 0.f, 0.f,
+  		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, -1.f, 0.f, 0.f,
+  		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, -1.f, 0.f, 0.f,
+  		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, -1.f, 0.f, 0.f,
+  		       -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, -1.f, 0.f, 0.f,
 
-  		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-  		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-  		       0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-  		       0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-  		       0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-  		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+  		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.f, 0.f, 0.f,
+  		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 1.f, 0.f, 0.f,
+  		       0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.f, 0.f, 0.f,
+  		       0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.f, 0.f, 0.f,
+  		       0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.f, 0.f, 0.f,
+  		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.f, 0.f, 0.f,
 
-  		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-  		       0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-  		       0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-  		       0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-  		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-  		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+  		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.f, -1.f, 0.f,
+  		       0.5f, -0.5f, -0.5f,  1.0f, 1.0f,	 0.f, -1.f, 0.f,
+  		       0.5f, -0.5f,  0.5f,  1.0f, 0.0f,	 0.f, -1.f, 0.f,
+  		       0.5f, -0.5f,  0.5f,  1.0f, 0.0f,	 0.f, -1.f, 0.f,
+  		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.f, -1.f, 0.f,
+  		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.f, -1.f, 0.f,
 
-  		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-  		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-  		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-  		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-  		       -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-  		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+  		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.f, 1.f, 0.f,
+  		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f,	 0.f, 1.f, 0.f,
+  		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f,	 0.f, 1.f, 0.f,
+  		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f,	 0.f, 1.f, 0.f,
+  		       -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.f, 1.f, 0.f,
+  		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.f, 1.f, 0.f
   };
-
-  real32 lampVertices[] = {
-        -0.5f, -0.5f, -0.5f, 
-         0.5f, -0.5f, -0.5f,  
-         0.5f,  0.5f, -0.5f,  
-         0.5f,  0.5f, -0.5f,  
-        -0.5f,  0.5f, -0.5f, 
-        -0.5f, -0.5f, -0.5f, 
-
-        -0.5f, -0.5f,  0.5f, 
-         0.5f, -0.5f,  0.5f,  
-         0.5f,  0.5f,  0.5f,  
-         0.5f,  0.5f,  0.5f,  
-        -0.5f,  0.5f,  0.5f, 
-        -0.5f, -0.5f,  0.5f, 
-
-        -0.5f,  0.5f,  0.5f, 
-        -0.5f,  0.5f, -0.5f, 
-        -0.5f, -0.5f, -0.5f, 
-        -0.5f, -0.5f, -0.5f, 
-        -0.5f, -0.5f,  0.5f, 
-        -0.5f,  0.5f,  0.5f, 
-
-         0.5f,  0.5f,  0.5f,  
-         0.5f,  0.5f, -0.5f,  
-         0.5f, -0.5f, -0.5f,  
-         0.5f, -0.5f, -0.5f,  
-         0.5f, -0.5f,  0.5f,  
-         0.5f,  0.5f,  0.5f,  
-
-        -0.5f, -0.5f, -0.5f, 
-         0.5f, -0.5f, -0.5f,  
-         0.5f, -0.5f,  0.5f,  
-         0.5f, -0.5f,  0.5f,  
-        -0.5f, -0.5f,  0.5f, 
-        -0.5f, -0.5f, -0.5f, 
-
-        -0.5f,  0.5f, -0.5f, 
-         0.5f,  0.5f, -0.5f,  
-         0.5f,  0.5f,  0.5f,  
-         0.5f,  0.5f,  0.5f,  
-        -0.5f,  0.5f,  0.5f, 
-        -0.5f,  0.5f, -0.5f, 
-    };
   
   // NOTE(l4v): Positions of 10 cubes
   
@@ -554,21 +510,26 @@ int main(int argc, char* argv[]){
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
   // NOTE(l4v): Telling OpenGL how to interpret the vertex data in memory
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+
+  // NOTE(l4v): Position
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
-  // Texture coords
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
+  // NOTE(l4v): Texture coords
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
 			(void*) (3 * sizeof(float)));
   glEnableVertexAttribArray(1);
+
+  // NOTE(l4v): Normal
+  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
+			(void*) (5 * sizeof(float)));
+  glEnableVertexAttribArray(2);
   
   glGenVertexArrays(1, &lightVAO);
-  glGenBuffers(1, &lightVBO);
   
   glBindVertexArray(lightVAO);
   
-  glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(lampVertices), lampVertices, GL_STATIC_DRAW);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);  
 
   // NOTE(l4v): TEXTURE 1
@@ -647,9 +608,9 @@ int main(int argc, char* argv[]){
 
   // NOTE(l4v): Camera variables
   camera_struct camera;
-  camera.model = glm::mat4(1.f);
-  camera.projection;
-  camera.view = glm::mat4(1.f);
+  glm::mat4 model = glm::mat4(1.f);
+  glm::mat4 projection;
+  glm::mat4 view = glm::mat4(1.f);
   
   camera.pos   = glm::vec3(0.0f, 0.0f,  3.0f);
   camera.front = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -657,12 +618,14 @@ int main(int argc, char* argv[]){
   camera.speed = 0.5f;
 
   // NOTE(l4v): Gets the locations of matrix uniforms
-  int32 mLocs[5] = {
+  int32 mLocs[7] = {
 		    glGetUniformLocation(lightingShader, "model"),
 		    glGetUniformLocation(lightingShader, "view"),
 		    glGetUniformLocation(lightingShader, "projection"),
 		    glGetUniformLocation(lightingShader, "objectColor"),
-		    glGetUniformLocation(lightingShader, "lightColor")
+		    glGetUniformLocation(lightingShader, "lightColor"),
+		    glGetUniformLocation(lightingShader, "lightPos"),
+		    glGetUniformLocation(lightingShader, "viewPos")
   };
 
   // NOTE(l4v): Gets the light uniforms
@@ -680,6 +643,7 @@ int main(int argc, char* argv[]){
   glm::vec3 lightColor = glm::vec3(1.f, 1.f, 1.f);
   
   glm::vec3 lightPos(1.2f, 1.f, 2.f);
+  glUniform3fv(mLocs[5], 1, glm::value_ptr(lightPos));
   
   // NOTE(l4v): For getting delta time
   real64 dt = 0.0;
@@ -690,6 +654,7 @@ int main(int argc, char* argv[]){
   real32 pitch = 0.f;
   real32 yaw = -90.f;
   camera.fov = 45.f;
+
 
   while(!quit)
     {
@@ -720,7 +685,7 @@ int main(int argc, char* argv[]){
 	  * camera.speed;
 
       // NOTE(l4v): Keeps the camera on xy plane
-      camera.pos.y = 0.f;
+      //      camera.pos.y = 0.f;
       
       while(SDL_PollEvent(&sdlEvent))
 	{
@@ -765,11 +730,11 @@ int main(int argc, char* argv[]){
       camera.front = glm::normalize(front);
 
       // NOTE(l4v): Projection matrix, gives a feeling of perspective
-      camera.projection = glm::perspective(glm::radians(camera.fov),
+      projection = glm::perspective(glm::radians(camera.fov),
 				    (real32) WINDOW_WIDTH / (real32) WINDOW_HEIGHT, 0.1f, 100.0f);
       
       // NOTE(l4v): Sets the world view
-      camera.view = look_at(
+      view = look_at(
 			 camera.pos,
 			 camera.pos + camera.front,
 			 camera.up
@@ -789,11 +754,12 @@ int main(int argc, char* argv[]){
       glUseProgram(lightingShader);
       glBindVertexArray(VAO);
       
-      glUniformMatrix4fv(mLocs[0], 1, GL_FALSE, glm::value_ptr(camera.model));
-      glUniformMatrix4fv(mLocs[1], 1, GL_FALSE, glm::value_ptr(camera.view));
-      glUniformMatrix4fv(mLocs[2], 1, GL_FALSE, glm::value_ptr(camera.projection));
+      glUniformMatrix4fv(mLocs[0], 1, GL_FALSE, glm::value_ptr(model));
+      glUniformMatrix4fv(mLocs[1], 1, GL_FALSE, glm::value_ptr(view));
+      glUniformMatrix4fv(mLocs[2], 1, GL_FALSE, glm::value_ptr(projection));
       glUniform3fv(mLocs[3], 1, glm::value_ptr(objectColor));
       glUniform3fv(mLocs[4], 1, glm::value_ptr(lightColor));
+      glUniform3fv(mLocs[6], 1, glm::value_ptr(camera.pos));
 
       
       // NOTE(l4v): Setting active texture unit and bind texture
@@ -825,9 +791,9 @@ int main(int argc, char* argv[]){
       model = glm::translate(model, lightPos);
       model = glm::scale(model, glm::vec3(0.2f));
       
-      glUniformMatrix4fv(lightLocs[0], 1, GL_FALSE, glm::value_ptr(camera.model));
-      glUniformMatrix4fv(lightLocs[1], 1, GL_FALSE, glm::value_ptr(camera.view));
-      glUniformMatrix4fv(lightLocs[2], 1, GL_FALSE, glm::value_ptr(camera.projection));
+      glUniformMatrix4fv(lightLocs[0], 1, GL_FALSE, glm::value_ptr(model));
+      glUniformMatrix4fv(lightLocs[1], 1, GL_FALSE, glm::value_ptr(view));
+      glUniformMatrix4fv(lightLocs[2], 1, GL_FALSE, glm::value_ptr(projection));
       glUniform3fv(lightLocs[3], 1, glm::value_ptr(objectColor));
       glUniform3fv(lightLocs[4], 1, glm::value_ptr(lightColor));
 
