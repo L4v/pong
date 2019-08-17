@@ -110,11 +110,14 @@ enum shader_type
    FRAGMENT
   };
 
-glm::mat4 look_at(glm::vec3, glm::vec3, glm::vec3);
-const char* load_shader(const char*);
-void check_shader_compilation(uint32, shader_type);
-void check_shader_program_link(uint32);
-
+internal glm::mat4 look_at(glm::vec3, glm::vec3, glm::vec3);
+internal const char* load_shader(const char*);
+internal void check_shader_compilation(uint32, shader_type);
+internal void check_shader_program_link(uint32);
+internal inline void setVec3(uint32, const char*, const glm::vec3&);
+internal inline void setVec3(uint32, const char*, real32, real32, real32);
+internal inline void setFloat(uint32, const char*, real32);
+internal inline void setMat4(uint32, const char*, const glm::mat4&);
 //void RenderAndUpdate(sf::RenderWindow*, const real32&);
 //bool32 CheckCollision(real32, real32, real32, real32,
 //		    real32, real32, real32, real32);

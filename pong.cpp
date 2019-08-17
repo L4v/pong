@@ -199,7 +199,7 @@
 //   window->display();
 // }
 
-const char* load_shader(const char* path)
+internal const char* load_shader(const char* path)
 {
   char* shaderText = 0;
   int64 length;
@@ -221,7 +221,7 @@ const char* load_shader(const char* path)
   return shaderText;
 }
 
-glm::mat4 look_at(glm::vec3 cameraPos, glm::vec3 targetPos, glm::vec3 worldUp)
+internal glm::mat4 look_at(glm::vec3 cameraPos, glm::vec3 targetPos, glm::vec3 worldUp)
 {
   // NOTE(l4v): Calculate the normalized direction vector of the camera
   // (the z axis)
@@ -259,7 +259,7 @@ glm::mat4 look_at(glm::vec3 cameraPos, glm::vec3 targetPos, glm::vec3 worldUp)
   return rotation * translation;
 }
 
-void check_shader_compilation(uint32 shader, shader_type type)
+internal void check_shader_compilation(uint32 shader, shader_type type)
 {
   // NOTE(l4v): Check if shader compilation failed
   int32 success;
@@ -275,7 +275,7 @@ void check_shader_compilation(uint32 shader, shader_type type)
     }  
 }
 
-void check_shader_program_link(uint32 program)
+internal void check_shader_program_link(uint32 program)
 {
   int32 success;
   GLchar infoLog[512];
@@ -286,6 +286,26 @@ void check_shader_program_link(uint32 program)
       glGetProgramInfoLog(program, 512, NULL, infoLog);
       std::cout << "ERROR::SHADER_PROGRAM::LINKING_FAILED" << std::endl << infoLog << std::endl;
     }
+}
+
+internal inline void setVec3(uint32 shader, const char* variable, const glm::vec3& value)
+{
+  glUniform3fv(glGetUniformLocation(shader, variable), 1, &value[0]);
+}
+
+internal inline void setVec3(uint32 shader, const char* variable, real32 x, real32 y, real32 z)
+{
+  glUniform3f(glGetUniformLocation(shader, variable), x, y, z);
+}
+
+internal inline void setFloat(uint32 shader, const char* variable, real32 fValue)
+{
+  glUniform1f(glGetUniformLocation(shader, variable), fValue);
+}
+
+internal inline void setMat4(uint32 shader, const char* variable, const glm::mat4 &mat)
+{
+  glUniformMatrix4fv(glGetUniformLocation(shader, variable), 1, GL_FALSE, &mat[0][0]);
 }
 
 const char* fragmentShaderSource = load_shader("cube.fs");
@@ -643,7 +663,6 @@ int main(int argc, char* argv[]){
   glm::vec3 lightColor = glm::vec3(1.f, 1.f, 1.f);
   
   glm::vec3 lightPos(1.2f, 1.f, 2.f);
-  glUniform3fv(mLocs[5], 1, glm::value_ptr(lightPos));
   
   // NOTE(l4v): For getting delta time
   real64 dt = 0.0;
@@ -655,6 +674,19 @@ int main(int argc, char* argv[]){
   real32 yaw = -90.f;
   camera.fov = 45.f;
 
+  // NOTE(l4v): Radius of the rotating light source
+  real32 radius = 2.f;
+
+  // NOTE(l4v): Init materials and light
+  // ----------------------------------
+  setVec3(lightingShader, "material.ambient", 1.f, 0.5f, 0.31f);
+  setVec3(lightingShader, "material.diffuse", 1.f, 0.5f, 0.31f);
+  setVec3(lightingShader, "material.specular", 0.5f, 0.5f, 0.5f);
+  setFloat(lightingShader, "material.shininess", 32.f);
+
+  setVec3(lightingShader, "light.ambient", .2f, .2f, .2f);
+  setVec3(lightingShader, "light.diffuse", .5f, .5f, .5f);
+  setVec3(lightingShader, "light.specular", 1.f, 1.f, 1.f);
 
   while(!quit)
     {
@@ -754,12 +786,13 @@ int main(int argc, char* argv[]){
       glUseProgram(lightingShader);
       glBindVertexArray(VAO);
       
-      glUniformMatrix4fv(mLocs[0], 1, GL_FALSE, glm::value_ptr(model));
-      glUniformMatrix4fv(mLocs[1], 1, GL_FALSE, glm::value_ptr(view));
-      glUniformMatrix4fv(mLocs[2], 1, GL_FALSE, glm::value_ptr(projection));
-      glUniform3fv(mLocs[3], 1, glm::value_ptr(objectColor));
-      glUniform3fv(mLocs[4], 1, glm::value_ptr(lightColor));
-      glUniform3fv(mLocs[6], 1, glm::value_ptr(camera.pos));
+      setMat4(lightingShader, "model", model);
+      setMat4(lightingShader, "view", view);
+      setMat4(lightingShader, "projection", projection);
+      setVec3(lightingShader, "objectColor", objectColor);
+      setVec3(lightingShader, "lightColor", lightColor);
+      setVec3(lightingShader, "lightPos", lightPos);
+      setVec3(lightingShader, "viewPos", camera.pos);
 
       
       // NOTE(l4v): Setting active texture unit and bind texture
@@ -777,7 +810,7 @@ int main(int argc, char* argv[]){
       model = glm::translate(model, cubePositions[0]);
       model = glm::rotate(model, glm::radians(0.f),
 			  glm::vec3(1.f, 0.3f, 0.5f));
-      glUniformMatrix4fv(mLocs[0], 1, GL_FALSE, glm::value_ptr(model));
+      setMat4(lightingShader, "model", model);
 
       glDrawArrays(GL_TRIANGLES, 0, 36);
       glActiveTexture(0);
@@ -786,16 +819,20 @@ int main(int argc, char* argv[]){
       // ----------------
       glUseProgram(lampShader);
       glBindVertexArray(lightVAO);
+
+      lightPos = glm::vec3(radius * cos(glm::radians((real32)SDL_GetTicks() / 100.f)),
+			   0.f,
+			   radius * sin(glm::radians((real32)SDL_GetTicks() / 100.f)));
       
       model = glm::mat4(1.f);
       model = glm::translate(model, lightPos);
       model = glm::scale(model, glm::vec3(0.2f));
       
-      glUniformMatrix4fv(lightLocs[0], 1, GL_FALSE, glm::value_ptr(model));
-      glUniformMatrix4fv(lightLocs[1], 1, GL_FALSE, glm::value_ptr(view));
-      glUniformMatrix4fv(lightLocs[2], 1, GL_FALSE, glm::value_ptr(projection));
-      glUniform3fv(lightLocs[3], 1, glm::value_ptr(objectColor));
-      glUniform3fv(lightLocs[4], 1, glm::value_ptr(lightColor));
+      setMat4(lampShader, "model", model);
+      setMat4(lampShader, "view", view);
+      setMat4(lampShader, "projection", projection);
+      setVec3(lampShader, "objectColor", objectColor);
+      setVec3(lampShader, "lightColor", lightColor);
 
       glDrawArrays(GL_TRIANGLES, 0, 36);
       
