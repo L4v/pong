@@ -116,8 +116,10 @@ internal void check_shader_compilation(uint32, shader_type);
 internal void check_shader_program_link(uint32);
 internal inline void setVec3(uint32, const char*, const glm::vec3&);
 internal inline void setVec3(uint32, const char*, real32, real32, real32);
-internal inline void setFloat(uint32, const char*, real32);
 internal inline void setMat4(uint32, const char*, const glm::mat4&);
+internal inline void setFloat(uint32, const char*, real32);
+internal inline void setInt(uint32, const char*, uint32);
+internal inline void setInt(uint32, const char*, int32);
 //void RenderAndUpdate(sf::RenderWindow*, const real32&);
 //bool32 CheckCollision(real32, real32, real32, real32,
 //		    real32, real32, real32, real32);

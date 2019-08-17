@@ -308,6 +308,16 @@ internal inline void setMat4(uint32 shader, const char* variable, const glm::mat
   glUniformMatrix4fv(glGetUniformLocation(shader, variable), 1, GL_FALSE, &mat[0][0]);
 }
 
+internal inline void setInt(uint32 shader, const char* variable, uint32 uValue)
+{
+  glUniform1i(glGetUniformLocation(shader, variable), uValue);
+}
+
+internal inline void setInt(uint32 shader, const char* variable, int32 iValue)
+{
+  glUniform1i(glGetUniformLocation(shader, variable), iValue);
+}
+
 const char* fragmentShaderSource = load_shader("cube.fs");
 const char* vertexShaderSource = load_shader("cube.vs");
 const char* lightFragmentShaderSource = load_shader("light.fs");
@@ -325,6 +335,11 @@ int main(int argc, char* argv[]){
   SDL_Event sdlEvent;
 
   bool quit;
+  
+  // NOTE(l4v): For getting delta time
+  real64 dt = 0.0;
+  int64 now = 0;
+  int64 last = 0;
   
   // NOTE(l4v): Allocating new memory and subdividing it into parts
   // game_memory GameMemory{};
@@ -416,17 +431,17 @@ int main(int argc, char* argv[]){
 
   // NOTE(l4v): Array of vertices for rectangle
   real32 vertices[] = {
-  		       -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,0.f, 0.f, -1.f,
-  		       0.5f, -0.5f, -0.5f,  1.0f, 0.0f,	0.f, 0.f, -1.f,
-  		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f,	0.f, 0.f, -1.f,
-  		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f,	0.f, 0.f, -1.f,
-  		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,0.f, 0.f, -1.f,
-  		       -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,0.f, 0.f, -1.f,
+  		       -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.f, 0.f, -1.f,
+  		       0.5f,  -0.5f, -0.5f,  1.0f, 0.0f, 0.f, 0.f, -1.f,
+  		       0.5f,   0.5f, -0.5f,  1.0f, 1.0f, 0.f, 0.f, -1.f,
+  		       0.5f,   0.5f, -0.5f,  1.0f, 1.0f, 0.f, 0.f, -1.f,
+  		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.f, 0.f, -1.f,
+  		       -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.f, 0.f, -1.f,
 
   		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.f, 0.f, 1.f,
-  		       0.5f, -0.5f,  0.5f,  1.0f, 0.0f,	 0.f, 0.f, 1.f,
-  		       0.5f,  0.5f,  0.5f,  1.0f, 1.0f,	 0.f, 0.f, 1.f,
-  		       0.5f,  0.5f,  0.5f,  1.0f, 1.0f,	 0.f, 0.f, 1.f,
+  		       0.5f,  -0.5f,  0.5f,  1.0f, 0.0f, 0.f, 0.f, 1.f,
+  		       0.5f,   0.5f,  0.5f,  1.0f, 1.0f, 0.f, 0.f, 1.f,
+  		       0.5f,   0.5f,  0.5f,  1.0f, 1.0f, 0.f, 0.f, 1.f,
   		       -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.f, 0.f, 1.f,
   		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.f, 0.f, 1.f,
 
@@ -552,13 +567,13 @@ int main(int argc, char* argv[]){
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);  
 
-  // NOTE(l4v): TEXTURE 1
+  // NOTE(l4v): Diffuse map
   // --------------------
   
   // NOTE(l4v): Binding the texture
-  uint32 texture1, texture2;
-  glGenTextures(1, &texture1);
-  glBindTexture(GL_TEXTURE_2D, texture1);
+  uint32 diffuseMap, specularMap;
+  glGenTextures(1, &diffuseMap);
+  glBindTexture(GL_TEXTURE_2D, diffuseMap);
 
   // NOTE(l4v): Tell stb to flip image on y-axis
   stbi_set_flip_vertically_on_load(true);
@@ -566,7 +581,7 @@ int main(int argc, char* argv[]){
   // NOTE(l4v): Set wrapping and filtering options
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   
   // NOTE(l4v): Loading and generating the actual texture
@@ -576,42 +591,45 @@ int main(int argc, char* argv[]){
   uint8 *data;
 
   // NOTE(l4v): Loading first image
-  data = stbi_load("container.jpg", &width, &height, &nChannels, 0);
-  if(data)
-    {
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-      glGenerateMipmap(GL_TEXTURE_2D);
-    }
-  else
-    {
-      std::cout << "ERROR::TEXTURE::FAILED_TO_LOAD" << std::endl;
-    }
-  // NOTE(l4v): Frees the image data
-  stbi_image_free(data);
-
-  // NOTE(l4v): TEXTURE 2
-  // --------------------
-  glGenTextures(1, &texture2);
-  glBindTexture(GL_TEXTURE_2D, texture2);
-
-  // NOTE(l4v): Set wrapping and filtering options
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  
-  // NOTE(l4v): Loading second image
-  data = stbi_load("awesomeface.png", &width, &height, &nChannels, 0);
+  data = stbi_load("container2.png", &width, &height, &nChannels, 0);
   if(data)
     {
       glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
       glGenerateMipmap(GL_TEXTURE_2D);
     }
+  else
+    {
+      std::cout << "ERROR::TEXTURE:FAILED_TO_LOAD_DIFFUSE_MAP" << std::endl;
+    }
+  // NOTE(l4v): Frees the image data
   stbi_image_free(data);
 
+  // NOTE(l4v): Specular map
+  // -----------------------
+  glGenTextures(1, &specularMap);
+  glBindTexture(GL_TEXTURE_2D, specularMap);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  data = stbi_load("container2_specular.png", &width, &height, &nChannels, 0);
+  if(data)
+    {
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+      glGenerateMipmap(GL_TEXTURE_2D);
+    }
+  else
+    {
+      std::cout << "ERROR::TEXTURE:FAILED_TO_LOAD_SPECULAR_MAP" << std::endl;
+    }
+
+  stbi_image_free(data);
+  
   glUseProgram(lightingShader);
-  glUniform1i(glGetUniformLocation(lightingShader, "texture1"), 0);
-  glUniform1i(glGetUniformLocation(lightingShader, "texture2"), 1);
+  setInt(lightingShader, "material.diffuse", 0);
+  setInt(lightingShader, "material.specular", 1);
 
   // NOTE(l4v): Disable cursor
   SDL_ShowCursor(SDL_DISABLE);
@@ -637,41 +655,17 @@ int main(int argc, char* argv[]){
   camera.up    = glm::vec3(0.0f, 1.0f,  0.0f);
   camera.speed = 0.5f;
 
-  // NOTE(l4v): Gets the locations of matrix uniforms
-  int32 mLocs[7] = {
-		    glGetUniformLocation(lightingShader, "model"),
-		    glGetUniformLocation(lightingShader, "view"),
-		    glGetUniformLocation(lightingShader, "projection"),
-		    glGetUniformLocation(lightingShader, "objectColor"),
-		    glGetUniformLocation(lightingShader, "lightColor"),
-		    glGetUniformLocation(lightingShader, "lightPos"),
-		    glGetUniformLocation(lightingShader, "viewPos")
-  };
-
-  // NOTE(l4v): Gets the light uniforms
-  int32 lightLocs[5] = {
-			glGetUniformLocation(lampShader, "model"),
-			glGetUniformLocation(lampShader, "view"),
-			glGetUniformLocation(lampShader, "projection"),
-			glGetUniformLocation(lampShader, "objectColor"),
-			glGetUniformLocation(lampShader, "lightColor")
-		    
-  };
-
   // NOTE(l4v): Colors
   glm::vec3 objectColor = glm::vec3(1.f, 0.5f, 0.31f);
   glm::vec3 lightColor = glm::vec3(1.f, 1.f, 1.f);
   
   glm::vec3 lightPos(1.2f, 1.f, 2.f);
-  
-  // NOTE(l4v): For getting delta time
-  real64 dt = 0.0;
-  int64 now = SDL_GetPerformanceCounter();
-  int64 last = 0;
 
   real32 mouseSensitivity = 0.5f;
   real32 pitch = 0.f;
   real32 yaw = -90.f;
+
+
   camera.fov = 45.f;
 
   // NOTE(l4v): Radius of the rotating light source
@@ -784,27 +778,22 @@ int main(int argc, char* argv[]){
       
       // NOTE(l4v): Lighting
       glUseProgram(lightingShader);
-      glBindVertexArray(VAO);
       
       setMat4(lightingShader, "model", model);
       setMat4(lightingShader, "view", view);
       setMat4(lightingShader, "projection", projection);
       setVec3(lightingShader, "objectColor", objectColor);
       setVec3(lightingShader, "lightColor", lightColor);
-      setVec3(lightingShader, "lightPos", lightPos);
+      setVec3(lightingShader, "light.position", lightPos);
       setVec3(lightingShader, "viewPos", camera.pos);
 
       
       // NOTE(l4v): Setting active texture unit and bind texture
       glActiveTexture(GL_TEXTURE0);
-      glBindTexture(GL_TEXTURE_2D, texture1);
-
+      glBindTexture(GL_TEXTURE_2D, diffuseMap);
       glActiveTexture(GL_TEXTURE1);
-      glBindTexture(GL_TEXTURE_2D, texture2);
+      glBindTexture(GL_TEXTURE_2D, specularMap);
       
-      // NOTE(l4v): Bind the VAO
-      // glBindVertexArray(VAO);
-
       // NOTE(l4v): Draw cube
       glm::mat4 model = glm::mat4(1.f);
       model = glm::translate(model, cubePositions[0]);
@@ -812,8 +801,8 @@ int main(int argc, char* argv[]){
 			  glm::vec3(1.f, 0.3f, 0.5f));
       setMat4(lightingShader, "model", model);
 
+      glBindVertexArray(VAO);
       glDrawArrays(GL_TRIANGLES, 0, 36);
-      glActiveTexture(0);
 
       // NOTE(l4v): Lamp
       // ----------------
