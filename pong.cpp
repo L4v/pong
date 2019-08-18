@@ -779,7 +779,10 @@ int main(int argc, char* argv[]){
       setMat4(lightingShader, "projection", projection);
       setVec3(lightingShader, "objectColor", objectColor);
       setVec3(lightingShader, "lightColor", lightColor);
-      setVec3(lightingShader, "light.position", lightPos);
+      setVec3(lightingShader, "light.position", camera.pos);//lightPos);
+      setVec3(lightingShader, "light.direction", camera.front);
+      setFloat(lightingShader, "light.cutOff", glm::cos(glm::radians(12.5f)));
+      setFloat(lightingShader, "light.outerCutOff", glm::cos(glm::radians(17.5f)));
       setVec3(lightingShader, "viewPos", camera.pos);
       setFloat(lightingShader, "light.constant", 1.f);
       setFloat(lightingShader, "light.linear", .09f);
