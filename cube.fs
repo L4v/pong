@@ -14,6 +14,10 @@ struct Light
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+
+    float constant;
+    float linear;
+    float quadratic;
 };
 
   out highp vec4 FragColor;
@@ -28,11 +32,20 @@ struct Light
   uniform vec3 objectColor;
   uniform vec3 lightColor;
   
-  uniform vec3 lightPos;
   uniform vec3 viewPos;
 
   void main()
 {
+	// NOTE(l4v): Attenuation
+	float distance = length(light.position - FragPos);
+	float attenuation = 1.f /
+	      (
+		light.constant
+		+ light.linear * distance
+		+ light.quadratic * distance * distance
+	      );
+
+
 	// NOTE(l4v): Ambient
 	vec3 ambient = light.ambient * texture(material.diffuse, TexCoords).rgb;
 
@@ -47,7 +60,11 @@ struct Light
 	vec3 reflectDir = reflect(-lightDir, norm);
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
 	vec3 specular = light.specular * spec * texture(material.specular, TexCoords).rgb;
-	
+
+	ambient *= attenuation;
+	diffuse *= attenuation;
+	specular *= attenuation;
+
 	vec3 result = ambient + diffuse + specular;
 	FragColor = vec4(result, 1.f);
 

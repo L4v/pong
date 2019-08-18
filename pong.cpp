@@ -288,6 +288,45 @@ internal void check_shader_program_link(uint32 program)
     }
 }
 
+internal uint32 load_texture(const char* path)
+{
+  uint32 id;
+  glGenTextures(1, &id);
+  
+  int32 width, height, nComponents;
+
+  uint8* data = stbi_load(path, &width, &height, &nComponents, 0);
+  if(data)
+    {
+      GLenum format;
+      if(nComponents == 1)
+	format = GL_RED;
+      else if(nComponents == 3)
+	format = GL_RGB;
+      else if(nComponents == 4)
+	format = GL_RGBA;
+
+      glBindTexture(GL_TEXTURE_2D, id);
+      glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format,
+		   GL_UNSIGNED_BYTE, data);
+      glGenerateMipmap(GL_TEXTURE_2D);
+
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+		      GL_LINEAR_MIPMAP_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    }
+  else
+    {
+      std::cout << "ERROR::TEXTURE:FAILED_TO_LOAD(" << path << ")"
+		<< std::endl;
+    }
+      stbi_image_free(data);
+      return id;
+}
+
 internal inline void setVec3(uint32 shader, const char* variable, const glm::vec3& value)
 {
   glUniform3fv(glGetUniformLocation(shader, variable), 1, &value[0]);
@@ -477,9 +516,17 @@ int main(int argc, char* argv[]){
   // NOTE(l4v): Positions of 10 cubes
   
   glm::vec3 cubePositions[] = {
-			       glm::vec3( 0.0f,  0.0f,  0.0f)
+			       glm::vec3( 0.0f,  0.0f,  0.0f),
+			       glm::vec3( 2.0f,  5.0f, -15.0f),
+			       glm::vec3(-1.5f, -2.2f, -2.5f),
+			       glm::vec3(-3.8f, -2.0f, -12.3f),
+			       glm::vec3( 2.4f, -0.4f, -3.5f),
+			       glm::vec3(-1.7f,  3.0f, -7.5f),
+			       glm::vec3( 1.3f, -2.0f, -2.5f),
+			       glm::vec3( 1.5f,  2.0f, -2.5f),
+			       glm::vec3( 1.5f,  0.2f, -1.5f),
+			       glm::vec3(-1.3f,  1.0f, -1.5f)
   };
-
   // NOTE(l4v): Vertex shaders
   // -------------------------
   uint32 vertexShader, lightVertexShader;
@@ -567,69 +614,16 @@ int main(int argc, char* argv[]){
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);  
 
-  // NOTE(l4v): Diffuse map
-  // --------------------
+  // NOTE(l4v): Loading texture maps
+  uint32 diffuseMap, specularMap, emissionMap;
+  diffuseMap = load_texture("container2.png");
+  specularMap = load_texture("container2_specular.png");
   
-  // NOTE(l4v): Binding the texture
-  uint32 diffuseMap, specularMap;
-  glGenTextures(1, &diffuseMap);
-  glBindTexture(GL_TEXTURE_2D, diffuseMap);
-
-  // NOTE(l4v): Tell stb to flip image on y-axis
-  stbi_set_flip_vertically_on_load(true);
-  
-  // NOTE(l4v): Set wrapping and filtering options
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  
-  // NOTE(l4v): Loading and generating the actual texture
-  // Texture variables
-  int32 width, height, nChannels;
-  // TODO(l4v): Make use of memory arenas
-  uint8 *data;
-
-  // NOTE(l4v): Loading first image
-  data = stbi_load("container2.png", &width, &height, &nChannels, 0);
-  if(data)
-    {
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-      glGenerateMipmap(GL_TEXTURE_2D);
-    }
-  else
-    {
-      std::cout << "ERROR::TEXTURE:FAILED_TO_LOAD_DIFFUSE_MAP" << std::endl;
-    }
-  // NOTE(l4v): Frees the image data
-  stbi_image_free(data);
-
-  // NOTE(l4v): Specular map
-  // -----------------------
-  glGenTextures(1, &specularMap);
-  glBindTexture(GL_TEXTURE_2D, specularMap);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  data = stbi_load("container2_specular.png", &width, &height, &nChannels, 0);
-  if(data)
-    {
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-      glGenerateMipmap(GL_TEXTURE_2D);
-    }
-  else
-    {
-      std::cout << "ERROR::TEXTURE:FAILED_TO_LOAD_SPECULAR_MAP" << std::endl;
-    }
-
-  stbi_image_free(data);
   
   glUseProgram(lightingShader);
   setInt(lightingShader, "material.diffuse", 0);
   setInt(lightingShader, "material.specular", 1);
+  setInt(lightingShader, "material.emission", 2);
 
   // NOTE(l4v): Disable cursor
   SDL_ShowCursor(SDL_DISABLE);
@@ -659,12 +653,13 @@ int main(int argc, char* argv[]){
   glm::vec3 objectColor = glm::vec3(1.f, 0.5f, 0.31f);
   glm::vec3 lightColor = glm::vec3(1.f, 1.f, 1.f);
   
-  glm::vec3 lightPos(1.2f, 1.f, 2.f);
+  glm::vec3 lightDir(-.2f, -1.f, -.3f);
 
   real32 mouseSensitivity = 0.5f;
   real32 pitch = 0.f;
   real32 yaw = -90.f;
 
+  glm::vec3 lightPos = glm::vec3(1.f, 1.f, 1.f);
 
   camera.fov = 45.f;
 
@@ -786,6 +781,9 @@ int main(int argc, char* argv[]){
       setVec3(lightingShader, "lightColor", lightColor);
       setVec3(lightingShader, "light.position", lightPos);
       setVec3(lightingShader, "viewPos", camera.pos);
+      setFloat(lightingShader, "light.constant", 1.f);
+      setFloat(lightingShader, "light.linear", .09f);
+      setFloat(lightingShader, "light.quadratic", .032f);
 
       
       // NOTE(l4v): Setting active texture unit and bind texture
@@ -795,23 +793,32 @@ int main(int argc, char* argv[]){
       glBindTexture(GL_TEXTURE_2D, specularMap);
       
       // NOTE(l4v): Draw cube
-      glm::mat4 model = glm::mat4(1.f);
-      model = glm::translate(model, cubePositions[0]);
-      model = glm::rotate(model, glm::radians(0.f),
-			  glm::vec3(1.f, 0.3f, 0.5f));
-      setMat4(lightingShader, "model", model);
+      for(size_t i = 0; i < sizeof(cubePositions) / sizeof(glm::vec3); ++i)
+	{
+	  glm::mat4 model = glm::mat4(1.f);
+	  model = glm::translate(model, cubePositions[i]);
+	  float angle = 20.f * i;
+	  model = glm::rotate(model, glm::radians(angle),
+			      glm::vec3(1.f, 0.3f, 0.5f));
+	  setMat4(lightingShader, "model", model);
 
-      glBindVertexArray(VAO);
-      glDrawArrays(GL_TRIANGLES, 0, 36);
+	  glBindVertexArray(VAO);
+	  glDrawArrays(GL_TRIANGLES, 0, 36);
+	}
+      
 
       // NOTE(l4v): Lamp
       // ----------------
       glUseProgram(lampShader);
       glBindVertexArray(lightVAO);
 
-      lightPos = glm::vec3(radius * cos(glm::radians((real32)SDL_GetTicks() / 100.f)),
+      lightPos = glm::vec3(radius
+			   * cos(glm::radians((real32)SDL_GetTicks()
+					      / 100.f)),
 			   0.f,
-			   radius * sin(glm::radians((real32)SDL_GetTicks() / 100.f)));
+			   radius
+			   * sin(glm::radians((real32)SDL_GetTicks()
+					      / 100.f)));
       
       model = glm::mat4(1.f);
       model = glm::translate(model, lightPos);
@@ -821,6 +828,7 @@ int main(int argc, char* argv[]){
       setMat4(lampShader, "view", view);
       setMat4(lampShader, "projection", projection);
       setVec3(lampShader, "objectColor", objectColor);
+      setVec3(lampShader, "light.position", lightPos);
       setVec3(lampShader, "lightColor", lightColor);
 
       glDrawArrays(GL_TRIANGLES, 0, 36);
