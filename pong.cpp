@@ -513,7 +513,7 @@ int main(int argc, char* argv[]){
   		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.f, 1.f, 0.f
   };
   
-  // NOTE(l4v): Positions of 10 cubes
+  // NOTE(l4v): Positions of cubes
   
   glm::vec3 cubePositions[] = {
 			       glm::vec3( 0.0f,  0.0f,  0.0f),
@@ -527,6 +527,15 @@ int main(int argc, char* argv[]){
 			       glm::vec3( 1.5f,  0.2f, -1.5f),
 			       glm::vec3(-1.3f,  1.0f, -1.5f)
   };
+
+  // NOTE(l4v): Positions of point lights
+  glm::vec3 pointLightPositions[] = {
+				     glm::vec3( 0.7f,  0.2f,  2.0f),
+				     glm::vec3( 2.3f, -3.3f, -4.0f),
+				     glm::vec3(-4.0f,  2.0f, -12.0f),
+				     glm::vec3( 0.0f,  0.0f, -3.0f)
+  };
+  
   // NOTE(l4v): Vertex shaders
   // -------------------------
   uint32 vertexShader, lightVertexShader;
@@ -673,10 +682,61 @@ int main(int argc, char* argv[]){
   setVec3(lightingShader, "material.specular", 0.5f, 0.5f, 0.5f);
   setFloat(lightingShader, "material.shininess", 32.f);
 
-  setVec3(lightingShader, "light.ambient", .2f, .2f, .2f);
-  setVec3(lightingShader, "light.diffuse", .5f, .5f, .5f);
-  setVec3(lightingShader, "light.specular", 1.f, 1.f, 1.f);
+  // NOTE(l4v): Directional light
+  setVec3(lightingShader, "dirLight.direction", -.2f, -1.f, -.3f);
+  setVec3(lightingShader, "dirLight.ambient", 0.05f, 0.05f, 0.05f);
+  setVec3(lightingShader, "dirLight.diffuse", 0.4f, 0.4f, 0.4f);
+  setVec3(lightingShader, "dirLight.specular", 0.5f, 0.5f, 0.5f);
+  
+  // NOTE(l4v): Point lights  
+  setVec3(lightingShader, "pointLights[0].position",
+	  pointLightPositions[0]);
+  setVec3(lightingShader, "pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
+  setVec3(lightingShader, "pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
+  setVec3(lightingShader, "pointLights[0].specular", 1.0f, 1.0f, 1.0f);
+  setFloat(lightingShader, "pointLights[0].constant", 1.f);
+  setFloat(lightingShader, "pointLights[0].linear", .09f);
+  setFloat(lightingShader, "pointLights[0].quadratic", .032f);
+  
+  setVec3(lightingShader, "pointLights[1].position",
+	  pointLightPositions[1]);
+  setVec3(lightingShader, "pointLights[1].ambient", 0.05f, 0.05f, 0.05f);
+  setVec3(lightingShader, "pointLights[1].diffuse", 0.8f, 0.8f, 0.8f);
+  setVec3(lightingShader, "pointLights[1].specular", 1.0f, 1.0f, 1.0f);
+  setFloat(lightingShader, "pointLights[1].constant", 1.f);
+  setFloat(lightingShader, "pointLights[1].linear", .09f);
+  setFloat(lightingShader, "pointLights[1].quadratic", .032f);
+  
+  setVec3(lightingShader, "pointLights[2].position",
+	  pointLightPositions[2]);
+  setVec3(lightingShader, "pointLights[2].ambient", 0.05f, 0.05f, 0.05f);
+  setVec3(lightingShader, "pointLights[2].diffuse", 0.8f, 0.8f, 0.8f);
+  setVec3(lightingShader, "pointLights[2].specular", 1.0f, 1.0f, 1.0f);
+  setFloat(lightingShader, "pointLights[2].constant", 1.f);
+  setFloat(lightingShader, "pointLights[2].linear", .09f);
+  setFloat(lightingShader, "pointLights[2].quadratic", .032f);
 
+  setVec3(lightingShader, "pointLights[3].position",
+	  pointLightPositions[3]);
+  setVec3(lightingShader, "pointLights[3].ambient", 0.05f, 0.05f, 0.05f);
+  setVec3(lightingShader, "pointLights[3].diffuse", 0.8f, 0.8f, 0.8f);
+  setVec3(lightingShader, "pointLights[3].specular", 1.0f, 1.0f, 1.0f);
+  setFloat(lightingShader, "pointLights[3].constant", 1.f);
+  setFloat(lightingShader, "pointLights[3].linear", .09f);
+  setFloat(lightingShader, "pointLights[3].quadratic", .032f);
+  
+  // NOTE(l4v): Spotlight
+  setVec3(lightingShader, "spotLight.ambient", 0.0f, 0.0f, 0.0f);
+  setVec3(lightingShader, "spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+  setVec3(lightingShader, "spotLight.specular", 1.0f, 1.0f, 1.0f);
+  setFloat(lightingShader, "spotLight.constant", 1.0f);
+  setFloat(lightingShader, "spotLight.linear", 0.09);
+  setFloat(lightingShader, "spotLight.quadratic", 0.032);
+  setFloat(lightingShader, "spotLight.cutOff",
+	   glm::cos(glm::radians(12.5f)));
+  setFloat(lightingShader, "spotLight.outerCutOff",
+	   glm::cos(glm::radians(15.0f)));  
+  
   while(!quit)
     {
       // NOTE(l4v): Gets the delta time
@@ -762,7 +822,7 @@ int main(int argc, char* argv[]){
 			 );
       
       // NOTE(l4v): Set background to black color
-      glClearColor(0.2f, 0.3f, 0.3f, 1.f);
+      glClearColor(0.1f, 0.1f, 0.1f, 1.f);
       
       // NOTE(l4v): Clear the color buffer
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -774,20 +834,12 @@ int main(int argc, char* argv[]){
       // NOTE(l4v): Lighting
       glUseProgram(lightingShader);
       
-      setMat4(lightingShader, "model", model);
       setMat4(lightingShader, "view", view);
       setMat4(lightingShader, "projection", projection);
-      setVec3(lightingShader, "objectColor", objectColor);
-      setVec3(lightingShader, "lightColor", lightColor);
-      setVec3(lightingShader, "light.position", camera.pos);//lightPos);
-      setVec3(lightingShader, "light.direction", camera.front);
-      setFloat(lightingShader, "light.cutOff", glm::cos(glm::radians(12.5f)));
-      setFloat(lightingShader, "light.outerCutOff", glm::cos(glm::radians(17.5f)));
       setVec3(lightingShader, "viewPos", camera.pos);
-      setFloat(lightingShader, "light.constant", 1.f);
-      setFloat(lightingShader, "light.linear", .09f);
-      setFloat(lightingShader, "light.quadratic", .032f);
-
+      setVec3(lightingShader, "spotLight.position", camera.pos);
+      setVec3(lightingShader, "spotLight.direction", camera.front);
+      
       
       // NOTE(l4v): Setting active texture unit and bind texture
       glActiveTexture(GL_TEXTURE0);
@@ -815,26 +867,20 @@ int main(int argc, char* argv[]){
       glUseProgram(lampShader);
       glBindVertexArray(lightVAO);
 
-      lightPos = glm::vec3(radius
-			   * cos(glm::radians((real32)SDL_GetTicks()
-					      / 100.f)),
-			   0.f,
-			   radius
-			   * sin(glm::radians((real32)SDL_GetTicks()
-					      / 100.f)));
-      
-      model = glm::mat4(1.f);
-      model = glm::translate(model, lightPos);
-      model = glm::scale(model, glm::vec3(0.2f));
-      
-      setMat4(lampShader, "model", model);
       setMat4(lampShader, "view", view);
       setMat4(lampShader, "projection", projection);
-      setVec3(lampShader, "objectColor", objectColor);
-      setVec3(lampShader, "light.position", lightPos);
-      setVec3(lampShader, "lightColor", lightColor);
+      
+      for(size_t i = 0; i < sizeof(pointLightPositions) / sizeof(glm::vec3);
+	  ++i)
+	{	 
+	  model = glm::mat4(1.f);
+	  model = glm::translate(model, pointLightPositions[i]);
+	  model = glm::scale(model, glm::vec3(0.2f));
 
-      glDrawArrays(GL_TRIANGLES, 0, 36);
+	  setMat4(lampShader, "model", model); 
+	  glDrawArrays(GL_TRIANGLES, 0, 36);
+	}
+
       
       // Note(l4v): Swap the buffers
       SDL_GL_SwapWindow(window);      
