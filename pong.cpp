@@ -357,10 +357,12 @@ internal inline void setInt(uint32 shader, const char* variable, int32 iValue)
   glUniform1i(glGetUniformLocation(shader, variable), iValue);
 }
 
-const char* fragmentShaderSource = load_shader("cube.fs");
-const char* vertexShaderSource = load_shader("cube.vs");
+const char* cubeFragmentShaderSource = load_shader("cube.fs");
+const char* cubeVertexShaderSource = load_shader("cube.vs");
 const char* lightFragmentShaderSource = load_shader("light.fs");
 const char* lightVertexShaderSource = load_shader("light.vs");
+const char* paddleFragmentShaderSource = load_shader("paddle.fs");
+const char* paddleVertexShaderSource = load_shader("paddle.vs");
 
 int main(int argc, char* argv[]){
 #if PONG_INTERNAL
@@ -512,6 +514,18 @@ int main(int argc, char* argv[]){
   		       -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.f, 1.f, 0.f,
   		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.f, 1.f, 0.f
   };
+
+  real32 paddleVertices[] = {
+			     -.25f, -.5f, 0.f, // bottom left
+			     -.25f, .5f, 0.f, // top left
+			     .25f, -.5f, 0.f, // bottom right
+			     .25f, .5f, 0.f // top right
+  };
+
+  uint32 indices[] = {
+		      0, 1, 2,
+		      1, 2, 3
+  };
   
   // NOTE(l4v): Positions of cubes
   
@@ -538,40 +552,53 @@ int main(int argc, char* argv[]){
   
   // NOTE(l4v): Vertex shaders
   // -------------------------
-  uint32 vertexShader, lightVertexShader;
-  vertexShader = glCreateShader(GL_VERTEX_SHADER);
+  uint32 cubeVertexShader, lightVertexShader, paddleVertexShader;
+  cubeVertexShader = glCreateShader(GL_VERTEX_SHADER);
   lightVertexShader = glCreateShader(GL_VERTEX_SHADER);
+  paddleVertexShader = glCreateShader(GL_VERTEX_SHADER);
   
   // NOTE(l4v): Attaching shader source code to the shader object
-  glShaderSource(vertexShader, 1, &vertexShaderSource, 0);
+  glShaderSource(cubeVertexShader, 1, &cubeVertexShaderSource, 0);
   glShaderSource(lightVertexShader, 1, &lightVertexShaderSource, 0);
-  
-  glCompileShader(vertexShader);
-  check_shader_compilation(vertexShader, VERTEX);
+  glShaderSource(paddleVertexShader, 1, &paddleVertexShaderSource, 0);
+
+  // NOTE(l4v): Shader compilation
+  glCompileShader(cubeVertexShader);
+  check_shader_compilation(cubeVertexShader, VERTEX);
 
   glCompileShader(lightVertexShader);
   check_shader_compilation(lightVertexShader, VERTEX);
 
+  glCompileShader(paddleVertexShader);
+  check_shader_compilation(paddleVertexShader, VERTEX);
+
   // NOTE(l4v): Fragment shaders
   // ---------------------------
-  uint32 fragmentShader, lightFragmentShader;
-  fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+  uint32 cubeFragmentShader, lightFragmentShader, paddleFragmentShader;
+  cubeFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
   lightFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-  
-  glShaderSource(fragmentShader, 1, &fragmentShaderSource, 0);
+  paddleFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+
+  // NOTE(l4v): Attaching shader source code to shader object
+  glShaderSource(cubeFragmentShader, 1, &cubeFragmentShaderSource, 0);
   glShaderSource(lightFragmentShader, 1, &lightFragmentShaderSource, 0);
-  
-  glCompileShader(fragmentShader);
-  check_shader_compilation(fragmentShader, FRAGMENT);
+  glShaderSource(paddleFragmentShader, 1, &paddleFragmentShaderSource, 0);
+
+  // NOTE(l4v): Shader compilation
+  glCompileShader(cubeFragmentShader);
+  check_shader_compilation(cubeFragmentShader, FRAGMENT);
   
   glCompileShader(lightFragmentShader);
   check_shader_compilation(lightFragmentShader, FRAGMENT);
 
+  glCompileShader(paddleFragmentShader);
+  check_shader_compilation(paddleFragmentShader, FRAGMENT);
+
   // NOTE(l4v): Creating a shader program object
-  uint32 lightingShader, lampShader;
+  uint32 lightingShader, lampShader, paddleShader;
   lightingShader = glCreateProgram();
-  glAttachShader(lightingShader, vertexShader);
-  glAttachShader(lightingShader, fragmentShader);
+  glAttachShader(lightingShader, cubeVertexShader);
+  glAttachShader(lightingShader, cubeFragmentShader);
   glLinkProgram(lightingShader);
   check_shader_program_link(lightingShader);
   
@@ -580,45 +607,59 @@ int main(int argc, char* argv[]){
   glAttachShader(lampShader, lightFragmentShader);
   glLinkProgram(lampShader);
   check_shader_program_link(lampShader);
+
+  paddleShader = glCreateProgram();
+  glAttachShader(paddleShader, lightVertexShader);
+  glAttachShader(paddleShader, lightFragmentShader);
+  glLinkProgram(paddleShader);
+  check_shader_program_link(paddleShader);
   
   // NOTE(l4v): Deleting objects since they're not required after linking them
   // to the shader program
-  glDeleteShader(vertexShader);
-  glDeleteShader(fragmentShader);
+  glDeleteShader(cubeVertexShader);
+  glDeleteShader(cubeFragmentShader);
   glDeleteShader(lightVertexShader);
   glDeleteShader(lightFragmentShader);
+  glDeleteShader(paddleVertexShader);
+  glDeleteShader(paddleFragmentShader);
 
-  // NOTE(l4v): Creating the element buffer object, EBO
-  uint32 VBO, VAO, lightVAO, lightVBO;
+  // NOTE(l4v): VAO, EBO, VBO...
+  uint32
+    cubeVBO, cubeVAO,
+    lightVAO, lightVBO,
+    paddleVBO, paddleEBO, paddleVAO;
+
+  // NOTE(l4v): CUBE
+  // ---------------
   
   // NOTE(l4v): Generating a VAO
-  glGenVertexArrays(1, &VAO);
-  glGenBuffers(1, &VBO);
-
-  glBindVertexArray(VAO);
-  
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  glGenVertexArrays(1, &cubeVAO);
+  glGenBuffers(1, &cubeVBO);
+  glBindVertexArray(cubeVAO);
+  glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-  // NOTE(l4v): Telling OpenGL how to interpret the vertex data in memory
-
-  // NOTE(l4v): Position
+  // NOTE(l4v): Position data
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
-  // NOTE(l4v): Texture coords
+  // NOTE(l4v): Texture coords data
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
 			(void*) (3 * sizeof(float)));
   glEnableVertexAttribArray(1);
 
-  // NOTE(l4v): Normal
+  // NOTE(l4v): Normal data
   glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
 			(void*) (5 * sizeof(float)));
   glEnableVertexAttribArray(2);
-  
+
+  // NOTE(l4v): LAMP
+  // ---------------
+
+  // NOTE(l4v): Generating a VAO
   glGenVertexArrays(1, &lightVAO);
-  
   glBindVertexArray(lightVAO);
   
+  // NOTE(l4v): Position data
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);  
@@ -627,7 +668,23 @@ int main(int argc, char* argv[]){
   uint32 diffuseMap, specularMap, emissionMap;
   diffuseMap = load_texture("container2.png");
   specularMap = load_texture("container2_specular.png");
+
+  // NOTE(l4v): PADDLE
+  // -----------------
+  glGenVertexArrays(1, &paddleVAO);
+  glGenBuffers(1, &paddleVBO);
+  glGenBuffers(1, &paddleEBO);
+  glBindVertexArray(paddleVAO);
   
+  glBindBuffer(GL_ARRAY_BUFFER, paddleVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(paddleVertices), paddleVertices, GL_DYNAMIC_DRAW);
+  
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, paddleEBO);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_DYNAMIC_DRAW);
+  
+  // NOTE(l4v): Position data
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(real32), (void*)0);
+  glEnableVertexAttribArray(0);
   
   glUseProgram(lightingShader);
   setInt(lightingShader, "material.diffuse", 0);
@@ -813,7 +870,7 @@ int main(int argc, char* argv[]){
       // NOTE(l4v): Projection matrix, gives a feeling of perspective
       projection = glm::perspective(glm::radians(camera.fov),
 				    (real32) WINDOW_WIDTH / (real32) WINDOW_HEIGHT, 0.1f, 100.0f);
-      
+
       // NOTE(l4v): Sets the world view
       view = look_at(
 			 camera.pos,
@@ -857,7 +914,7 @@ int main(int argc, char* argv[]){
 			      glm::vec3(1.f, 0.3f, 0.5f));
 	  setMat4(lightingShader, "model", model);
 
-	  glBindVertexArray(VAO);
+	  glBindVertexArray(cubeVAO);
 	  glDrawArrays(GL_TRIANGLES, 0, 36);
 	}
       
@@ -881,8 +938,24 @@ int main(int argc, char* argv[]){
 	  glDrawArrays(GL_TRIANGLES, 0, 36);
 	}
 
+      // NOTE(l4v): Paddle
+      // -----------------
+      glUseProgram(paddleShader);
+      glBindVertexArray(paddleVAO);
+
+      setMat4(paddleShader, "view", view);
+      setMat4(paddleShader, "projection", projection);
+
+      model = glm::mat4(1.f);
+      model = glm::translate(model, glm::vec3(5.f, 5.f, 5.f));
+
+      setMat4(paddleShader, "model", model);
+      glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
       
-      // Note(l4v): Swap the buffers
+      // NOTE(l4v): Unbind VAO
+      glBindVertexArray(0);
+      
+      // NOTE(l4v): Swap the buffers
       SDL_GL_SwapWindow(window);      
     }
 
@@ -890,9 +963,9 @@ int main(int argc, char* argv[]){
   SDL_DestroyWindow(window);
   window = 0;
   
-  glDeleteVertexArrays(1, &VAO);
+  glDeleteVertexArrays(1, &cubeVAO);
   glDeleteVertexArrays(1, &lightVAO);
-  glDeleteBuffers(1, &VBO);
+  glDeleteBuffers(1, &cubeVBO);
 
   SDL_Quit();
   
