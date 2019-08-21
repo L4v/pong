@@ -898,6 +898,8 @@ int main(int argc, char* argv[]){
 
       setMat4(lampShader, "view", view);
       setMat4(lampShader, "projection", projection);
+
+      pointLightPositions[0].x += 
       
       for(size_t i = 0; i < nPointLights; ++i)
 	{	 
