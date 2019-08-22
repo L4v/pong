@@ -927,21 +927,23 @@ int main(int argc, char* argv[]){
 
       if(check_aabb(
 		 cubePositions[0].x, cubePositions[0].y, cubePositions[0].z,
-		 paddleWidth, paddleHeight, 1.f,
+		 paddleWidth / 2.f, paddleHeight / 2.f, .5f,
 		 pointLightPositions[0].x, pointLightPositions[0].y, pointLightPositions[0].z,
-		 ballWidth, ballWidth, ballWidth
+		 ballWidth / 2.f, ballWidth / 2.f, ballWidth / .5f
 		    ))
       {
+	pointLightPositions[0].x = cubePositions[0].x + paddleWidth;
 	dx *= -1;
       }
 
       if(check_aabb(
 		 cubePositions[1].x, cubePositions[1].y, cubePositions[1].z,
-		 paddleWidth, paddleHeight, 1.f,
+		 paddleWidth / 2.f, paddleHeight / 2.f, .5f,
 		 pointLightPositions[0].x, pointLightPositions[0].y, pointLightPositions[0].z,
-		 ballWidth, ballWidth, 1.f
+		 ballWidth / 2.f, ballWidth / 2.f, .5f
 		    ))
 	{
+	  pointLightPositions[0].x = cubePositions[1].x - paddleWidth;
 	  dx *= -1;
 	}
       
