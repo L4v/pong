@@ -642,8 +642,8 @@ int main(int argc, char* argv[]){
 
   // NOTE(l4v): Loading texture maps
   uint32 diffuseMap, specularMap, emissionMap;
-  diffuseMap = load_texture("container2.png");
-  specularMap = load_texture("container2_specular.png");
+  diffuseMap = load_texture("paddle.png");
+  specularMap = load_texture("paddle.png");
 
   glUseProgram(lightingShader);
   setInt(lightingShader, "material.diffuse", 0);
@@ -698,8 +698,9 @@ int main(int argc, char* argv[]){
     paddleHeight = 1.f;
   real32 ballWidth = .2f;
   real32 ballSpeed = 3.f;
-
-
+  real32 dx = ballSpeed;
+  real32 dy = 0.f;
+  
   // NOTE(l4v): Init materials and light
   // ----------------------------------
   setVec3(lightingShader, "material.ambient", 1.f, 0.5f, 0.31f);
@@ -709,9 +710,9 @@ int main(int argc, char* argv[]){
 
   // NOTE(l4v): Directional light
   setVec3(lightingShader, "dirLight.direction", -.2f, -1.f, -.3f);
-  setVec3(lightingShader, "dirLight.ambient", 0.05f, 0.05f, 0.05f);
-  setVec3(lightingShader, "dirLight.diffuse", 0.4f, 0.4f, 0.4f);
-  setVec3(lightingShader, "dirLight.specular", 0.5f, 0.5f, 0.5f);
+  setVec3(lightingShader, "dirLight.ambient", 0.0f, 0.0f, 0.0f);
+  setVec3(lightingShader, "dirLight.diffuse", 0.f, 0.f, 0.f);
+  setVec3(lightingShader, "dirLight.specular", 0.f, 0.f, 0.f);
   
   // NOTE(l4v): Point lights  
 
@@ -720,7 +721,7 @@ int main(int argc, char* argv[]){
       std::stringstream ss;
       ss << "pointLights[" << i << "].position";
       setVec3(lightingShader, ss.str().c_str(),
-	      pointLightPositions[0]);
+	      pointLightPositions[i]);
       ss.str(std::string());
       ss << "pointLights[" << i << "].ambient";
       setVec3(lightingShader, ss.str().c_str(),
@@ -728,27 +729,27 @@ int main(int argc, char* argv[]){
       ss.str(std::string());
       ss << "pointLights[" << i << "].diffuse";
       setVec3(lightingShader, ss.str().c_str(),
-	      0.8f, 0.8f, 0.8f);
+	      0.8f, 0.0f, 0.0f);
       ss.str(std::string());
       ss << "pointLights[" << i << "].specular";
       setVec3(lightingShader, ss.str().c_str(),
-	      1.0f, 1.0f, 1.0f);
+	      1.0f, 0.6f, 0.6f);
       ss.str(std::string());
       ss << "pointLights[" << i << "].constant";
       ss.str(std::string());
       setFloat(lightingShader, ss.str().c_str(), 1.f);
       ss.str(std::string());
       ss << "pointLights[" << i << "].linear";
-      setFloat(lightingShader, ss.str().c_str(), .09f);
+      setFloat(lightingShader, ss.str().c_str(), .014f);
       ss.str(std::string());
       ss << "pointLights[" << i << "].quadratic";
-      setFloat(lightingShader, ss.str().c_str(), .032f);
+      setFloat(lightingShader, ss.str().c_str(), .7f);
     }
  
   // NOTE(l4v): Spotlight
   setVec3(lightingShader, "spotLight.ambient", 0.0f, 0.0f, 0.0f);
-  setVec3(lightingShader, "spotLight.diffuse", 1.0f, 1.0f, 1.0f);
-  setVec3(lightingShader, "spotLight.specular", 1.0f, 1.0f, 1.0f);
+  setVec3(lightingShader, "spotLight.diffuse", .0f, .0f, .0f);
+  setVec3(lightingShader, "spotLight.specular", .0f, .0f, 0.0f);
   setFloat(lightingShader, "spotLight.constant", 1.0f);
   setFloat(lightingShader, "spotLight.linear", 0.09);
   setFloat(lightingShader, "spotLight.quadratic", 0.032);
@@ -756,7 +757,10 @@ int main(int argc, char* argv[]){
 	   glm::cos(glm::radians(12.5f)));
   setFloat(lightingShader, "spotLight.outerCutOff",
 	   glm::cos(glm::radians(15.0f)));  
-  
+
+  now = SDL_GetPerformanceCounter();
+  last = now;
+  dt = 0.f;
   while(!quit)
     {
       // NOTE(l4v): Gets the delta time
@@ -777,6 +781,9 @@ int main(int argc, char* argv[]){
 	
       if(keystates[SDL_SCANCODE_S])
 	cubePositions[0].y -= paddleSpeed * dt;
+
+      if(keystates[SDL_SCANCODE_A])
+	camera.pos.x -= camera.speed;
 
 	  // check_aabb(
 	  // 	     cubePositions[0].x, cubePositions[0].y, cubePositions[0].z,
@@ -853,8 +860,7 @@ int main(int argc, char* argv[]){
       
       // NOTE(l4v): Clear the color buffer
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
+      
       // NOTE(l4v): Cube
       // ---------------
       
@@ -879,9 +885,6 @@ int main(int argc, char* argv[]){
 	{
 	  glm::mat4 model = glm::mat4(1.f);
 	  model = glm::translate(model, cubePositions[i]);
-	  float angle = 20.f * i;
-	  model = glm::rotate(model, glm::radians(0.f),
-			      glm::vec3(1.f, 0.3f, 0.5f));
 	  model = glm::scale(model,
 			     glm::vec3(paddleWidth, paddleHeight, 1.f));
 	  setMat4(lightingShader, "model", model);
@@ -889,6 +892,9 @@ int main(int argc, char* argv[]){
 	  glBindVertexArray(cubeVAO);
 	  glDrawArrays(GL_TRIANGLES, 0, 36);
 	}
+      
+      setVec3(lightingShader, "pointLights[0].position",
+	      pointLightPositions[0]);
       
 
       // NOTE(l4v): Lamp
@@ -898,6 +904,46 @@ int main(int argc, char* argv[]){
 
       setMat4(lampShader, "view", view);
       setMat4(lampShader, "projection", projection);
+
+
+      // Ball hits top
+      if(pointLightPositions[0].y >= 2.f){
+	pointLightPositions[0].y = 2.f;
+      }
+
+      // Ball hits bottom
+      // if(State->b.sprite.getPosition().y + State->b.height >= WINDOW_HEIGHT){
+      // 	State->b.sprite.setPosition(State->b.sprite.getPosition().x, WINDOW_HEIGHT - State->b.height);
+      // 	State->b.dy *= -1.f;
+      // }
+  
+      // Ball leaves level
+      if(pointLightPositions[0].x < -3.f || pointLightPositions[0].x > 3.f)
+	{
+	  pointLightPositions[0].x = 0.f;
+	}
+
+      pointLightPositions[0].x += dx * dt;
+
+      if(check_aabb(
+		 cubePositions[0].x, cubePositions[0].y, cubePositions[0].z,
+		 paddleWidth, paddleHeight, 1.f,
+		 pointLightPositions[0].x, pointLightPositions[0].y, pointLightPositions[0].z,
+		 ballWidth, ballWidth, ballWidth
+		    ))
+      {
+	dx *= -1;
+      }
+
+      if(check_aabb(
+		 cubePositions[1].x, cubePositions[1].y, cubePositions[1].z,
+		 paddleWidth, paddleHeight, 1.f,
+		 pointLightPositions[0].x, pointLightPositions[0].y, pointLightPositions[0].z,
+		 ballWidth, ballWidth, 1.f
+		    ))
+	{
+	  dx *= -1;
+	}
       
       for(size_t i = 0; i < nPointLights; ++i)
 	{	 
