@@ -706,7 +706,7 @@ int main(int argc, char* argv[]){
   setVec3(lightingShader, "material.ambient", 1.f, 0.5f, 0.31f);
   setVec3(lightingShader, "material.diffuse", 1.f, 0.5f, 0.31f);
   setVec3(lightingShader, "material.specular", 0.5f, 0.5f, 0.5f);
-  setFloat(lightingShader, "material.shininess", 32.f);
+  setFloat(lightingShader, "material.shininess", 16.f);
 
   // NOTE(l4v): Directional light
   setVec3(lightingShader, "dirLight.direction", -.2f, -1.f, -.3f);
@@ -794,9 +794,17 @@ int main(int argc, char* argv[]){
       
       if(keystates[SDL_SCANCODE_R])
 	{
-	  camera.pos   = glm::vec3(0.0f, 0.0f,  8.0f);
+	  camera.pos   = glm::vec3(0.0f, 0.0f,  0.0f);
 	  camera.front = glm::vec3(0.0f, 0.0f, -1.0f);
 	  camera.up    = glm::vec3(0.0f, 1.0f,  0.0f);
+
+	  cubePositions[0].y = 0.f;
+	  cubePositions[1].y = 0.f;
+
+	  pointLightPositions[0].x = 0.f;
+	  pointLightPositions[0].y = 0.f;
+	  dx = ballSpeed;
+	  dy = 0.f;
 	}
       
       // NOTE(l4v): Keeps the camera on xy plane
@@ -845,15 +853,18 @@ int main(int argc, char* argv[]){
       camera.front = glm::normalize(front);
 
       // NOTE(l4v): Projection matrix, gives a feeling of perspective
-      projection = glm::perspective(glm::radians(camera.fov),
-				    (real32) WINDOW_WIDTH / (real32) WINDOW_HEIGHT, 0.1f, 100.0f);
+      // projection = glm::perspective(glm::radians(camera.fov),
+      // 				    (real32) WINDOW_WIDTH / (real32) WINDOW_HEIGHT, 0.1f, 100.0f);
+      projection = glm::ortho(0.0f, (real32)WINDOW_WIDTH,
+			      0.0f, (real32)WINDOW_HEIGHT,
+			      -1.f, 1.f);
 
       // NOTE(l4v): Sets the world view
-      view = look_at(
-			 camera.pos,
-			 camera.pos + camera.front,
-			 camera.up
-			 );
+      // view = look_at(
+      // 			 camera.pos,
+      // 			 camera.pos + camera.front,
+      // 			 camera.up
+      // 			 );
       
       // NOTE(l4v): Set background to black color
       glClearColor(0.1f, 0.1f, 0.1f, 1.f);
@@ -905,25 +916,29 @@ int main(int argc, char* argv[]){
       setMat4(lampShader, "view", view);
       setMat4(lampShader, "projection", projection);
 
+      real32 levelHeight = (real32)WINDOW_HEIGHT / 2.f;
 
       // Ball hits top
-      if(pointLightPositions[0].y >= 2.f){
-	pointLightPositions[0].y = 2.f;
+      if(pointLightPositions[0].y + ballWidth * 0.5f >= levelHeight){
+	pointLightPositions[0].y = levelHeight - ballWidth * 0.5f;
+	dy *= -1;
       }
 
       // Ball hits bottom
-      // if(State->b.sprite.getPosition().y + State->b.height >= WINDOW_HEIGHT){
-      // 	State->b.sprite.setPosition(State->b.sprite.getPosition().x, WINDOW_HEIGHT - State->b.height);
-      // 	State->b.dy *= -1.f;
-      // }
+      if(pointLightPositions[0].y - ballWidth * 0.5f <= -levelHeight){
+	pointLightPositions[0].y = -levelHeight + ballWidth * 0.5f;
+	dy *= -1;
+      }
   
       // Ball leaves level
       if(pointLightPositions[0].x < -3.f || pointLightPositions[0].x > 3.f)
 	{
 	  pointLightPositions[0].x = 0.f;
+	  pointLightPositions[0].y = 0.f;
+	  dx = ballSpeed;
+	  dy = 0;
 	}
 
-      pointLightPositions[0].x += dx * dt;
 
       if(check_aabb(
 		 cubePositions[0].x, cubePositions[0].y, cubePositions[0].z,
@@ -934,6 +949,17 @@ int main(int argc, char* argv[]){
       {
 	pointLightPositions[0].x = cubePositions[0].x + paddleWidth;
 	dx *= -1;
+	dy = 0;
+	if(pointLightPositions[0].y
+	   >= cubePositions[0].y + paddleWidth / 3.f)
+	  {
+	    dy = dx;
+	  }
+	if(pointLightPositions[0].y
+	   <= cubePositions[0].y - paddleWidth / 3.f)
+	  {
+	    dy = -dx;
+	  }
       }
 
       if(check_aabb(
@@ -945,7 +971,21 @@ int main(int argc, char* argv[]){
 	{
 	  pointLightPositions[0].x = cubePositions[1].x - paddleWidth;
 	  dx *= -1;
+	  dy = 0;
+	  if(pointLightPositions[0].y
+	     >= cubePositions[1].y + paddleWidth / 3.f)
+	    {
+	      dy = -dx;
+	    }
+	  if(pointLightPositions[0].y
+	     <= cubePositions[1].y - paddleWidth / 3.f)
+	    {
+	      dy = dx;
+	    }
 	}
+
+      pointLightPositions[0].x += dx * dt;
+      pointLightPositions[0].y += dy * dt;
       
       for(size_t i = 0; i < nPointLights; ++i)
 	{	 
