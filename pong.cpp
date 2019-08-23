@@ -221,7 +221,8 @@ internal const char* load_shader(const char* path)
   return shaderText;
 }
 
-internal glm::mat4 look_at(glm::vec3 cameraPos, glm::vec3 targetPos, glm::vec3 worldUp)
+internal glm::mat4 look_at(glm::vec3 cameraPos, glm::vec3 targetPos,
+			   glm::vec3 worldUp)
 {
   // NOTE(l4v): Calculate the normalized direction vector of the camera
   // (the z axis)
