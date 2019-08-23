@@ -414,39 +414,6 @@ int main(int argc, char* argv[]){
   // Assert(GameMemory.TransientStorage);
   // Memory->isInitialized++;
   /*
-    window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "PONG!");
-    window.setFramerateLimit(60);
-  
-    // sf::Texture paddleTexture;
-    sf::Clock clock;
-    real32 dt = 0.f; // Time elapsed between frames
-  
-    // Main game loop
-  
-    // real32 lastTime = 0.f;
-    // real32 currentTime = 0.f;
-    // real32 fps = 0.f;
-    // sf::Clock fpsClock;
-    while (window.isOpen())
-    {
-  
-    RenderAndUpdate(&GameMemory, &window, dt);
-  
-    // Get elapsed time
-    dt = clock.getElapsedTime().asSeconds();
-  
-    // Reset the clock
-    clock.restart();
-    // currentTime = fpsClock.restart().asSeconds();
-    // fps = 1.f / currentTime;
-    // lastTime = currentTime;
-  
-    // std::cout << "S:" << fps << std::endl;
-    // system("clear");
-  
-    }
-  
-  
     munmap(GameMemory.PermanentStorage, GameMemory.PermanentStorageSize);
     munmap(GameMemory.TransientStorage, GameMemory.TransientStorageSize);
     //free(data.window);
@@ -484,17 +451,18 @@ int main(int argc, char* argv[]){
 
   // NOTE(l4v): Array of vertices for rectangle
   real32 vertices[] = {
-		       0.0f, 1.0f, 0.f, 0.0f, 1.0f,
-		       1.0f, 0.0f, 0.f, 1.0f, 0.0f,
-		       0.0f, 0.0f, 0.f, 0.0f, 0.0f, 
-    
-		       0.0f, 1.0f, 0.f, 0.0f, 1.0f,
-		       1.0f, 1.0f, 0.f, 1.0f, 1.0f,
-		       1.0f, 0.0f, 0.f, 1.0f, 0.0f
+		       -.5f, -.5f, 0.f, 0.0f, 1.0f, // bottom left
+		       -.5f, .5f, 0.f, 1.0f, 0.0f, // top left
+		       .5f, .5f, 0.f, 0.0f, 0.0f,  // top right
+		       .5f, -.5f, 0.f, 0.0f, 1.0f // bottom right
+  };
+
+  uint32 indices[] = {
+		      0, 1, 2,
+		      0, 2, 3
   };
   
   // NOTE(l4v): Positions of cubes
-  
   glm::vec3 paddlePositions[] = {
 				 glm::vec3( 0.0f, 0.0f, 0.f),
 				 glm::vec3( 0.0f, 0.0f, 0.f)
@@ -563,8 +531,8 @@ int main(int argc, char* argv[]){
 
   // NOTE(l4v): VAO, EBO, VBO...
   uint32
-    lightVAO, lightVBO,
-    paddleVBO, paddleVAO;
+    lightVAO, lightVBO, lightEBO,
+    paddleVBO, paddleVAO, paddleEBO;
 
   // NOTE(l4v): PADDLE
   // -----------------
@@ -573,6 +541,7 @@ int main(int argc, char* argv[]){
   glGenVertexArrays(1, &paddleVAO);
   glBindVertexArray(paddleVAO);
   glGenBuffers(1, &paddleVBO);
+  glGenBuffers(1, &paddleEBO);
 
   glBindBuffer(GL_ARRAY_BUFFER, paddleVBO);
 
@@ -583,6 +552,11 @@ int main(int argc, char* argv[]){
 			(void*) 0);
   glEnableVertexAttribArray(0);
 
+  // NOTE(l4v): EBO
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, paddleEBO);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
+	       GL_DYNAMIC_DRAW);
+  
   // NOTE(l4v): Texture data
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices,
 	       GL_DYNAMIC_DRAW);
@@ -596,12 +570,12 @@ int main(int argc, char* argv[]){
   // NOTE(l4v): Generating a VAO
   glGenVertexArrays(1, &lightVAO);
   glBindVertexArray(lightVAO);
-  
   // NOTE(l4v): Position data
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
-
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(vertices), vertices,
+	       GL_DYNAMIC_DRAW);
 
   // NOTE(l4v): Paddle texture
   uint32 paddleTex;
@@ -635,18 +609,18 @@ int main(int argc, char* argv[]){
   real32 paddleSpeed = 500.f;
   real32
     paddleWidth = 12.5f,
-    paddleHeight = 50.f;
-  real32 ballWidth = 100.f;
+    paddleHeight = 75.f;
+  real32 ballWidth = 10.f;
   real32 ballSpeed = 300.f;
   real32 dx = ballSpeed;
   real32 dy = 0.f;
 
-  real32 paddleStartY1= (real32)WINDOW_HEIGHT * 0.5f - paddleHeight * 0.5f;
+  real32 paddleStartY1= (real32)WINDOW_HEIGHT * 0.5f;
   real32 paddleStartX1 = 50.f;
-  real32 paddleStartY2 = (real32)WINDOW_HEIGHT * 0.5f - paddleHeight * 0.5f;
-  real32 paddleStartX2 = (real32)WINDOW_WIDTH - paddleWidth - 50.f;
-  real32 ballStartX = (real32)WINDOW_WIDTH * .5f - ballWidth * .5f;
-  real32 ballStartY = (real32)WINDOW_HEIGHT * .5f - ballWidth * .5f;
+  real32 paddleStartY2 = (real32)WINDOW_HEIGHT * 0.5f;
+  real32 paddleStartX2 = (real32)WINDOW_WIDTH - 50.f;
+  real32 ballStartX = (real32)WINDOW_WIDTH * .5f;
+  real32 ballStartY = (real32)WINDOW_HEIGHT * .5f;
   
 
   paddlePositions[0].x = paddleStartX1;
@@ -677,7 +651,13 @@ int main(int argc, char* argv[]){
 	
       if(keystates[SDL_SCANCODE_S])
 	paddlePositions[0].y += paddleSpeed * dt;
-
+      
+      if(keystates[SDL_SCANCODE_UP])
+	paddlePositions[1].y -= paddleSpeed * dt;
+	
+      if(keystates[SDL_SCANCODE_DOWN])
+	paddlePositions[1].y += paddleSpeed * dt;
+      
       if(keystates[SDL_SCANCODE_R])
 	{
 	  paddlePositions[0].y = paddleStartY1;
@@ -719,10 +699,10 @@ int main(int argc, char* argv[]){
 	}
 
       // NOTE(l4v): Projection matrix, gives a feeling of perspective
-      projection = glm::ortho(-(real32)WINDOW_WIDTH * .5f,
-			      (real32)WINDOW_WIDTH * .5f,
-			      -(real32)WINDOW_HEIGHT * .5f,
-			      (real32)WINDOW_HEIGHT * .5f,
+      projection = glm::ortho(.0f,
+			      (real32)WINDOW_WIDTH,
+			      (real32)WINDOW_HEIGHT,
+			      0.f,
 			      -1.f, 1.f);
 
       // NOTE(l4v): Set background to black color
@@ -747,34 +727,33 @@ int main(int argc, char* argv[]){
       			     glm::vec3(paddleWidth, paddleHeight, 1.f));
       	  setMat4(paddleShader, "model", model);
 
-      	  glBindVertexArray(paddleVAO);
-      	  glDrawArrays(GL_TRIANGLES, 0, 6);
+	  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, paddleEBO);
+	  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
       	}
       
       // NOTE(l4v): Lamp
       // ----------------
       glUseProgram(lampShader);
-      glBindVertexArray(lightVAO);
-
       setMat4(lampShader, "projection", projection);
 
       real32 levelHeight = (real32)WINDOW_HEIGHT;
       real32 levelWidth = (real32)WINDOW_WIDTH;
 
       // Ball hits top
-      if(ballPosition.y <= 0.f){
-	ballPosition.y = 0.f;
+      if(ballPosition.y - ballWidth * .5f <= 0.f){
+	ballPosition.y = ballWidth * .5f;
 	dy *= -1;
       }
 
       // Ball hits bottom
-      if(ballPosition.y + ballWidth >= levelHeight){
+      if(ballPosition.y + ballWidth * .5f >= levelHeight){
 	ballPosition.y = levelHeight - ballWidth * .5f;
 	dy *= -1;
       }
   
       // Ball leaves level
-      if(ballPosition.x <= 0.f || ballPosition.x + ballWidth >= levelWidth)
+      if(ballPosition.x - ballWidth * .5f <= 0.f
+	 || ballPosition.x + ballWidth * .5f >= levelWidth)
 	{
 	  ballPosition.x = ballStartX;
 	  ballPosition.y = ballStartY;
@@ -793,20 +772,16 @@ int main(int argc, char* argv[]){
 	ballPosition.x = paddlePositions[0].x + paddleWidth;
 	dx *= -1;
 	dy = 0;
-	std::cout << "LEFT PADDLE COLLISION";
-	if(ballPosition.y + ballWidth * .5f
-	   <= paddlePositions[0].y + paddleWidth * .33f)
+	if(ballPosition.y
+	   <= paddlePositions[0].y - paddleWidth * .33f)
 	  {
 	    dy = -dx;
-	    std::cout << " UPPER";
 	  }
-	if(ballPosition.y + ballWidth * .5f
-	   >= paddlePositions[0].y + paddleWidth * .66f)
+	if(ballPosition.y
+	   >= paddlePositions[0].y + paddleWidth * .33f)
 	  {
 	    dy = dx;
-	    std::cout << " LOWER";
 	  }
-	std::cout << std::endl;
       }
 
       if(check_aabb(
@@ -819,32 +794,30 @@ int main(int argc, char* argv[]){
 	  ballPosition.x = paddlePositions[1].x - ballWidth;
 	  dx *= -1;
 	  dy = 0;
-	  if(ballPosition.y + ballWidth * .5f
-	     <= paddlePositions[1].y + paddleHeight * .33f)
+	  if(ballPosition.y
+	     <= paddlePositions[1].y - paddleHeight * .33f)
 	    {
 	      dy = dx;
 	    }
 	  if(ballPosition.y
-	     >= paddlePositions[1].y + paddleHeight * .66f)
+	     >= paddlePositions[1].y + paddleHeight * .33f)
 	    {
 	      dy = -dx;
 	    }
 	}
       int32 mx, my;
       SDL_GetMouseState(&mx, &my);
-      ballPosition.x =0.f;//+= dx * dt;
-      ballPosition.y =0.f;//+= dy * dt;
+      ballPosition.x += dx * dt;
+      ballPosition.y += dy * dt;
       
       model = glm::mat4(1.f);
       model = glm::translate(model, ballPosition);
       model = glm::scale(model,
 			 glm::vec3(ballWidth, ballWidth, ballWidth));
-
       setMat4(lampShader, "model", model); 
-      glDrawArrays(GL_TRIANGLES, 0, 6);
-      
-      // NOTE(l4v): Unbind VAO
-      glBindVertexArray(0);
+
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, paddleEBO);
+      glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
       
       // NOTE(l4v): Swap the buffers
       SDL_GL_SwapWindow(window);      
