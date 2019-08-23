@@ -484,149 +484,111 @@ int main(int argc, char* argv[]){
 
   // NOTE(l4v): Array of vertices for rectangle
   real32 vertices[] = {
-  		       -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.f, 0.f, -1.f,
-  		       0.5f,  -0.5f, -0.5f,  1.0f, 0.0f, 0.f, 0.f, -1.f,
-  		       0.5f,   0.5f, -0.5f,  1.0f, 1.0f, 0.f, 0.f, -1.f,
-  		       0.5f,   0.5f, -0.5f,  1.0f, 1.0f, 0.f, 0.f, -1.f,
-  		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.f, 0.f, -1.f,
-  		       -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.f, 0.f, -1.f,
-
-  		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.f, 0.f, 1.f,
-  		       0.5f,  -0.5f,  0.5f,  1.0f, 0.0f, 0.f, 0.f, 1.f,
-  		       0.5f,   0.5f,  0.5f,  1.0f, 1.0f, 0.f, 0.f, 1.f,
-  		       0.5f,   0.5f,  0.5f,  1.0f, 1.0f, 0.f, 0.f, 1.f,
-  		       -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.f, 0.f, 1.f,
-  		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.f, 0.f, 1.f,
-
-  		       -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, -1.f, 0.f, 0.f,
-  		       -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, -1.f, 0.f, 0.f,
-  		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, -1.f, 0.f, 0.f,
-  		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, -1.f, 0.f, 0.f,
-  		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, -1.f, 0.f, 0.f,
-  		       -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, -1.f, 0.f, 0.f,
-
-  		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.f, 0.f, 0.f,
-  		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 1.f, 0.f, 0.f,
-  		       0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.f, 0.f, 0.f,
-  		       0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.f, 0.f, 0.f,
-  		       0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.f, 0.f, 0.f,
-  		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.f, 0.f, 0.f,
-
-  		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.f, -1.f, 0.f,
-  		       0.5f, -0.5f, -0.5f,  1.0f, 1.0f,	 0.f, -1.f, 0.f,
-  		       0.5f, -0.5f,  0.5f,  1.0f, 0.0f,	 0.f, -1.f, 0.f,
-  		       0.5f, -0.5f,  0.5f,  1.0f, 0.0f,	 0.f, -1.f, 0.f,
-  		       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.f, -1.f, 0.f,
-  		       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.f, -1.f, 0.f,
-
-  		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.f, 1.f, 0.f,
-  		       0.5f,  0.5f, -0.5f,  1.0f, 1.0f,	 0.f, 1.f, 0.f,
-  		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f,	 0.f, 1.f, 0.f,
-  		       0.5f,  0.5f,  0.5f,  1.0f, 0.0f,	 0.f, 1.f, 0.f,
-  		       -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.f, 1.f, 0.f,
-  		       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.f, 1.f, 0.f
+		       0.0f, 1.0f, 0.f, 0.0f, 1.0f,
+		       1.0f, 0.0f, 0.f, 1.0f, 0.0f,
+		       0.0f, 0.0f, 0.f, 0.0f, 0.0f, 
+    
+		       0.0f, 1.0f, 0.f, 0.0f, 1.0f,
+		       1.0f, 1.0f, 0.f, 1.0f, 1.0f,
+		       1.0f, 0.0f, 0.f, 1.0f, 0.0f
   };
   
   // NOTE(l4v): Positions of cubes
   
-  glm::vec3 cubePositions[] = {
-			       glm::vec3( -2.0f,  0.0f, 0.0f),
-			       glm::vec3( 2.0f,  0.0f,  0.0f)
+  glm::vec3 paddlePositions[] = {
+				 glm::vec3( 0.0f, 0.0f, 0.f),
+				 glm::vec3( 0.0f, 0.0f, 0.f)
   };
 
   // NOTE(l4v): Positions of point lights
-  glm::vec3 pointLightPositions[] = {
-				     glm::vec3( 0.f,  0.f,  0.f)
-  };
-
-  uint32 nCubes = sizeof(cubePositions) / sizeof(glm::vec3);
-  uint32 nPointLights = sizeof(pointLightPositions) / sizeof(glm::vec3);
+  glm::vec3 ballPosition = glm::vec3(0.f, 0.f, 0.f);
+  
+  uint32 nPaddles = sizeof(paddlePositions) / sizeof(glm::vec3);
+  uint32 nBalls = sizeof(ballPosition) / sizeof(glm::vec3);
   
   // NOTE(l4v): Vertex shaders
   // -------------------------
-  uint32 cubeVertexShader, lightVertexShader, paddleVertexShader;
-  cubeVertexShader = glCreateShader(GL_VERTEX_SHADER);
+  uint32 lightVertexShader, paddleVertexShader;
   lightVertexShader = glCreateShader(GL_VERTEX_SHADER);
   paddleVertexShader = glCreateShader(GL_VERTEX_SHADER);
   
   // NOTE(l4v): Attaching shader source code to the shader object
-  glShaderSource(cubeVertexShader, 1, &cubeVertexShaderSource, 0);
   glShaderSource(lightVertexShader, 1, &lightVertexShaderSource, 0);
   glShaderSource(paddleVertexShader, 1, &paddleVertexShaderSource, 0);
 
   // NOTE(l4v): Shader compilation
-  glCompileShader(cubeVertexShader);
-  check_shader_compilation(cubeVertexShader, VERTEX);
-
   glCompileShader(lightVertexShader);
   check_shader_compilation(lightVertexShader, VERTEX);
 
+  glCompileShader(paddleVertexShader);
+  check_shader_compilation(paddleVertexShader, VERTEX);
+
   // NOTE(l4v): Fragment shaders
   // ---------------------------
-  uint32 cubeFragmentShader, lightFragmentShader, paddleFragmentShader;
-  cubeFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+  uint32 lightFragmentShader, paddleFragmentShader;
   lightFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
   paddleFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
   // NOTE(l4v): Attaching shader source code to shader object
-  glShaderSource(cubeFragmentShader, 1, &cubeFragmentShaderSource, 0);
   glShaderSource(lightFragmentShader, 1, &lightFragmentShaderSource, 0);
-
-  // NOTE(l4v): Shader compilation
-  glCompileShader(cubeFragmentShader);
-  check_shader_compilation(cubeFragmentShader, FRAGMENT);
+  glShaderSource(paddleFragmentShader, 1, &paddleFragmentShaderSource, 0);
   
+  // NOTE(l4v): Shader compilation
   glCompileShader(lightFragmentShader);
   check_shader_compilation(lightFragmentShader, FRAGMENT);
 
+  glCompileShader(paddleFragmentShader);
+  check_shader_compilation(paddleFragmentShader, FRAGMENT);
+
   // NOTE(l4v): Creating a shader program object
-  uint32 lightingShader, lampShader, paddleShader;
-  lightingShader = glCreateProgram();
-  glAttachShader(lightingShader, cubeVertexShader);
-  glAttachShader(lightingShader, cubeFragmentShader);
-  glLinkProgram(lightingShader);
-  check_shader_program_link(lightingShader);
-  
+  uint32 lampShader, paddleShader;
   lampShader = glCreateProgram();
   glAttachShader(lampShader, lightVertexShader);
   glAttachShader(lampShader, lightFragmentShader);
   glLinkProgram(lampShader);
   check_shader_program_link(lampShader);
+
+  paddleShader = glCreateProgram();
+  glAttachShader(paddleShader, paddleVertexShader);
+  glAttachShader(paddleShader, paddleFragmentShader);
+  glLinkProgram(paddleShader);
+  check_shader_program_link(paddleShader);
   
   // NOTE(l4v): Deleting objects since they're not required after linking them
   // to the shader program
-  glDeleteShader(cubeVertexShader);
-  glDeleteShader(cubeFragmentShader);
   glDeleteShader(lightVertexShader);
   glDeleteShader(lightFragmentShader);
+  glDeleteShader(paddleVertexShader);
+  glDeleteShader(paddleFragmentShader);
 
   // NOTE(l4v): VAO, EBO, VBO...
   uint32
-    cubeVBO, cubeVAO,
-    lightVAO, lightVBO;
+    lightVAO, lightVBO,
+    paddleVBO, paddleVAO;
 
-  // NOTE(l4v): CUBE
-  // ---------------
-  
+  // NOTE(l4v): PADDLE
+  // -----------------
+
   // NOTE(l4v): Generating a VAO
-  glGenVertexArrays(1, &cubeVAO);
-  glGenBuffers(1, &cubeVBO);
-  glBindVertexArray(cubeVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+  glGenVertexArrays(1, &paddleVAO);
+  glBindVertexArray(paddleVAO);
+  glGenBuffers(1, &paddleVBO);
+
+  glBindBuffer(GL_ARRAY_BUFFER, paddleVBO);
 
   // NOTE(l4v): Position data
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices,
+	       GL_DYNAMIC_DRAW);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(real32),
+			(void*) 0);
   glEnableVertexAttribArray(0);
-  // NOTE(l4v): Texture coords data
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
-			(void*) (3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
 
-  // NOTE(l4v): Normal data
-  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
-			(void*) (5 * sizeof(float)));
-  glEnableVertexAttribArray(2);
+  // NOTE(l4v): Texture data
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices,
+	       GL_DYNAMIC_DRAW);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(real32),
+			(void*) (3 * sizeof(real32)));
+  glEnableVertexAttribArray(1);
 
   // NOTE(l4v): LAMP
   // ---------------
@@ -637,18 +599,15 @@ int main(int argc, char* argv[]){
   
   // NOTE(l4v): Position data
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-  glEnableVertexAttribArray(0);  
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+  glEnableVertexAttribArray(0);
 
-  // NOTE(l4v): Loading texture maps
-  uint32 diffuseMap, specularMap, emissionMap;
-  diffuseMap = load_texture("paddle.png");
-  specularMap = load_texture("paddle.png");
 
-  glUseProgram(lightingShader);
-  setInt(lightingShader, "material.diffuse", 0);
-  setInt(lightingShader, "material.specular", 1);
-  setInt(lightingShader, "material.emission", 2);
+  // NOTE(l4v): Paddle texture
+  uint32 paddleTex;
+  paddleTex = load_texture("paddle.png");
+  glUseProgram(paddleShader);
+  setInt(paddleShader, "tex", 0);
 
   // NOTE(l4v): Disable cursor
   SDL_ShowCursor(SDL_DISABLE);
@@ -664,100 +623,40 @@ int main(int argc, char* argv[]){
   // ------------------------------------
 
   // NOTE(l4v): Camera variables
-  camera_struct camera;
   glm::mat4 model = glm::mat4(1.f);
   glm::mat4 projection;
   glm::mat4 view = glm::mat4(1.f);
-  
-  camera.pos   = glm::vec3(0.0f, 0.0f,  8.0f);
-  camera.front = glm::vec3(0.0f, 0.0f, -1.0f);
-  camera.up    = glm::vec3(0.0f, 1.0f,  0.0f);
-  camera.speed = 0.5f;
-
-  // NOTE(l4v): Colors
-  glm::vec3 objectColor = glm::vec3(1.f, 0.5f, 0.31f);
-  glm::vec3 lightColor = glm::vec3(1.f, 1.f, 1.f);
-  
+			       
+  // NOTE(l4v): Colors  
   glm::vec3 lightDir(-.2f, -1.f, -.3f);
-
-  real32 mouseSensitivity = 0.5f;
-  real32 pitch = 0.f;
-  real32 yaw = -90.f;
-
   glm::vec3 lightPos = glm::vec3(1.f, 1.f, 1.f);
 
-  camera.fov = 22.5f;
-
-  // NOTE(l4v): Radius of the rotating light source
-  real32 radius = 2.f;
-
   // NOTE(l4v): Paddle and ball vars
-  real32 paddleSpeed = 3.f;
+  real32 paddleSpeed = 500.f;
   real32
-    paddleWidth = .2f,
-    paddleHeight = 1.f;
-  real32 ballWidth = .2f;
-  real32 ballSpeed = 3.f;
+    paddleWidth = 12.5f,
+    paddleHeight = 50.f;
+  real32 ballWidth = 100.f;
+  real32 ballSpeed = 300.f;
   real32 dx = ballSpeed;
   real32 dy = 0.f;
+
+  real32 paddleStartY1= (real32)WINDOW_HEIGHT * 0.5f - paddleHeight * 0.5f;
+  real32 paddleStartX1 = 50.f;
+  real32 paddleStartY2 = (real32)WINDOW_HEIGHT * 0.5f - paddleHeight * 0.5f;
+  real32 paddleStartX2 = (real32)WINDOW_WIDTH - paddleWidth - 50.f;
+  real32 ballStartX = (real32)WINDOW_WIDTH * .5f - ballWidth * .5f;
+  real32 ballStartY = (real32)WINDOW_HEIGHT * .5f - ballWidth * .5f;
   
-  // NOTE(l4v): Init materials and light
-  // ----------------------------------
-  setVec3(lightingShader, "material.ambient", 1.f, 0.5f, 0.31f);
-  setVec3(lightingShader, "material.diffuse", 1.f, 0.5f, 0.31f);
-  setVec3(lightingShader, "material.specular", 0.5f, 0.5f, 0.5f);
-  setFloat(lightingShader, "material.shininess", 16.f);
 
-  // NOTE(l4v): Directional light
-  setVec3(lightingShader, "dirLight.direction", -.2f, -1.f, -.3f);
-  setVec3(lightingShader, "dirLight.ambient", 0.0f, 0.0f, 0.0f);
-  setVec3(lightingShader, "dirLight.diffuse", 0.f, 0.f, 0.f);
-  setVec3(lightingShader, "dirLight.specular", 0.f, 0.f, 0.f);
+  paddlePositions[0].x = paddleStartX1;
+  paddlePositions[0].y = paddleStartY1;
+  paddlePositions[1].x = paddleStartX2;
+  paddlePositions[1].y = paddleStartY2;
+
+  ballPosition.x = ballStartX;
+  ballPosition.y = ballStartY;
   
-  // NOTE(l4v): Point lights  
-
-  for(size_t i = 0; i < nPointLights; ++i)
-    {
-      std::stringstream ss;
-      ss << "pointLights[" << i << "].position";
-      setVec3(lightingShader, ss.str().c_str(),
-	      pointLightPositions[i]);
-      ss.str(std::string());
-      ss << "pointLights[" << i << "].ambient";
-      setVec3(lightingShader, ss.str().c_str(),
-	      0.05f, 0.05f, 0.05f);
-      ss.str(std::string());
-      ss << "pointLights[" << i << "].diffuse";
-      setVec3(lightingShader, ss.str().c_str(),
-	      0.8f, 0.0f, 0.0f);
-      ss.str(std::string());
-      ss << "pointLights[" << i << "].specular";
-      setVec3(lightingShader, ss.str().c_str(),
-	      1.0f, 0.6f, 0.6f);
-      ss.str(std::string());
-      ss << "pointLights[" << i << "].constant";
-      ss.str(std::string());
-      setFloat(lightingShader, ss.str().c_str(), 1.f);
-      ss.str(std::string());
-      ss << "pointLights[" << i << "].linear";
-      setFloat(lightingShader, ss.str().c_str(), .014f);
-      ss.str(std::string());
-      ss << "pointLights[" << i << "].quadratic";
-      setFloat(lightingShader, ss.str().c_str(), .7f);
-    }
- 
-  // NOTE(l4v): Spotlight
-  setVec3(lightingShader, "spotLight.ambient", 0.0f, 0.0f, 0.0f);
-  setVec3(lightingShader, "spotLight.diffuse", .0f, .0f, .0f);
-  setVec3(lightingShader, "spotLight.specular", .0f, .0f, 0.0f);
-  setFloat(lightingShader, "spotLight.constant", 1.0f);
-  setFloat(lightingShader, "spotLight.linear", 0.09);
-  setFloat(lightingShader, "spotLight.quadratic", 0.032);
-  setFloat(lightingShader, "spotLight.cutOff",
-	   glm::cos(glm::radians(12.5f)));
-  setFloat(lightingShader, "spotLight.outerCutOff",
-	   glm::cos(glm::radians(15.0f)));  
-
   now = SDL_GetPerformanceCounter();
   last = now;
   dt = 0.f;
@@ -768,47 +667,36 @@ int main(int argc, char* argv[]){
       dt = ((real64)((now - last))) / SDL_GetPerformanceFrequency();
       last = now;
 
-      // NOTE(l4v): Set camera speed
-      camera.speed = 2.5f * dt;
-
       // TODO(l4v): MEMORY!!!
       const uint8* keystates;
       keystates = SDL_GetKeyboardState(0);
 
       // NOTE(l4v): Keyboard input irrelevant of events
       if(keystates[SDL_SCANCODE_W])
-	cubePositions[0].y += paddleSpeed * dt;
+	paddlePositions[0].y -= paddleSpeed * dt;
 	
       if(keystates[SDL_SCANCODE_S])
-	cubePositions[0].y -= paddleSpeed * dt;
+	paddlePositions[0].y += paddleSpeed * dt;
 
-      if(keystates[SDL_SCANCODE_A])
-	camera.pos.x -= camera.speed;
-
-	  // check_aabb(
-	  // 	     cubePositions[0].x, cubePositions[0].y, cubePositions[0].z,
-	  // 	     paddleWidth, paddleHeight, 1.f,
-	  // 	     cubePositions[1].x, cubePositions[1].y, cubePositions[1].z,
-	  // 	     paddleWidth, paddleHeight, 1.f
-	  // 	     ));
-      
       if(keystates[SDL_SCANCODE_R])
 	{
-	  camera.pos   = glm::vec3(0.0f, 0.0f,  0.0f);
-	  camera.front = glm::vec3(0.0f, 0.0f, -1.0f);
-	  camera.up    = glm::vec3(0.0f, 1.0f,  0.0f);
+	  paddlePositions[0].y = paddleStartY1;
+	  paddlePositions[1].y = paddleStartY2;
 
-	  cubePositions[0].y = 0.f;
-	  cubePositions[1].y = 0.f;
-
-	  pointLightPositions[0].x = 0.f;
-	  pointLightPositions[0].y = 0.f;
+	  ballPosition.x = ballStartX;
+	  ballPosition.y = ballStartY;
 	  dx = ballSpeed;
 	  dy = 0.f;
 	}
-      
-      // NOTE(l4v): Keeps the camera on xy plane
-      //      camera.pos.y = 0.f;
+
+      if(paddlePositions[0].y <= 0.f)
+	paddlePositions[0].y = 0.f;
+      if(paddlePositions[0].y + paddleHeight >= (real32)WINDOW_HEIGHT)
+	paddlePositions[0].y = (real32)WINDOW_HEIGHT - paddleHeight;
+      if(paddlePositions[1].y <= 0.f)
+	paddlePositions[1].y = 0.f;
+      if(paddlePositions[1].y + paddleHeight >= (real32)WINDOW_HEIGHT)
+	paddlePositions[1].y = (real32)WINDOW_HEIGHT - paddleHeight;
       
       while(SDL_PollEvent(&sdlEvent))
 	{
@@ -826,177 +714,134 @@ int main(int argc, char* argv[]){
 	  // NOTE(l4v): MOUSE MOVEMENT
 	  if(sdlEvent.type == SDL_MOUSEMOTION)
 	    {
-	      
-	      yaw += sdlEvent.motion.xrel * mouseSensitivity;
-	      pitch += -sdlEvent.motion.yrel * mouseSensitivity;
-
-	      if(pitch > 89.0f) pitch = 89.0f;
-	      if(pitch < -89.0f) pitch = -89.0f;
 
 	    }
-
-	  // NOTE(l4v): MOUSE WHEEL
-	  if(sdlEvent.type == SDL_MOUSEWHEEL)
-	    {
-	      if(sdlEvent.wheel.y > 0 && camera.fov >= 1.f && camera.fov < 45.f)
-		camera.fov += sdlEvent.wheel.y;
-	      if(sdlEvent.wheel.y < 0 && camera.fov > 1.f && camera.fov <= 45.f)
-		camera.fov += sdlEvent.wheel.y;
-	    }
-	  
 	}
-      
-      glm::vec3 front;
-      front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-      front.y = sin(glm::radians(pitch));
-      front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-      camera.front = glm::normalize(front);
 
       // NOTE(l4v): Projection matrix, gives a feeling of perspective
-      // projection = glm::perspective(glm::radians(camera.fov),
-      // 				    (real32) WINDOW_WIDTH / (real32) WINDOW_HEIGHT, 0.1f, 100.0f);
-      projection = glm::ortho(0.0f, (real32)WINDOW_WIDTH,
-			      0.0f, (real32)WINDOW_HEIGHT,
+      projection = glm::ortho(-(real32)WINDOW_WIDTH * .5f,
+			      (real32)WINDOW_WIDTH * .5f,
+			      -(real32)WINDOW_HEIGHT * .5f,
+			      (real32)WINDOW_HEIGHT * .5f,
 			      -1.f, 1.f);
 
-      // NOTE(l4v): Sets the world view
-      // view = look_at(
-      // 			 camera.pos,
-      // 			 camera.pos + camera.front,
-      // 			 camera.up
-      // 			 );
-      
       // NOTE(l4v): Set background to black color
       glClearColor(0.1f, 0.1f, 0.1f, 1.f);
       
       // NOTE(l4v): Clear the color buffer
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      
-      // NOTE(l4v): Cube
-      // ---------------
-      
-      // NOTE(l4v): Lighting
-      glUseProgram(lightingShader);
-      
-      setMat4(lightingShader, "view", view);
-      setMat4(lightingShader, "projection", projection);
-      setVec3(lightingShader, "viewPos", camera.pos);
-      setVec3(lightingShader, "spotLight.position", camera.pos);
-      setVec3(lightingShader, "spotLight.direction", camera.front);
-      
-      
+
+      glUseProgram(paddleShader);
+      setMat4(paddleShader, "projection", projection);      
+
       // NOTE(l4v): Setting active texture unit and bind texture
       glActiveTexture(GL_TEXTURE0);
-      glBindTexture(GL_TEXTURE_2D, diffuseMap);
-      glActiveTexture(GL_TEXTURE1);
-      glBindTexture(GL_TEXTURE_2D, specularMap);
-      
-      // NOTE(l4v): Draw cube
-      for(size_t i = 0; i < nCubes; ++i)
-	{
-	  glm::mat4 model = glm::mat4(1.f);
-	  model = glm::translate(model, cubePositions[i]);
-	  model = glm::scale(model,
-			     glm::vec3(paddleWidth, paddleHeight, 1.f));
-	  setMat4(lightingShader, "model", model);
+      glBindTexture(GL_TEXTURE_2D, paddleTex);
 
-	  glBindVertexArray(cubeVAO);
-	  glDrawArrays(GL_TRIANGLES, 0, 36);
-	}
-      
-      setVec3(lightingShader, "pointLights[0].position",
-	      pointLightPositions[0]);
-      
+      // NOTE(l4v): Draw paddle
+      for(size_t i = 0; i < nPaddles; ++i)
+      	{
+      	  glm::mat4 model = glm::mat4(1.f);
+      	  model = glm::translate(model, paddlePositions[i]);
+      	  model = glm::scale(model,
+      			     glm::vec3(paddleWidth, paddleHeight, 1.f));
+      	  setMat4(paddleShader, "model", model);
 
+      	  glBindVertexArray(paddleVAO);
+      	  glDrawArrays(GL_TRIANGLES, 0, 6);
+      	}
+      
       // NOTE(l4v): Lamp
       // ----------------
       glUseProgram(lampShader);
       glBindVertexArray(lightVAO);
 
-      setMat4(lampShader, "view", view);
       setMat4(lampShader, "projection", projection);
 
-      real32 levelHeight = (real32)WINDOW_HEIGHT / 2.f;
+      real32 levelHeight = (real32)WINDOW_HEIGHT;
+      real32 levelWidth = (real32)WINDOW_WIDTH;
 
       // Ball hits top
-      if(pointLightPositions[0].y + ballWidth * 0.5f >= levelHeight){
-	pointLightPositions[0].y = levelHeight - ballWidth * 0.5f;
+      if(ballPosition.y <= 0.f){
+	ballPosition.y = 0.f;
 	dy *= -1;
       }
 
       // Ball hits bottom
-      if(pointLightPositions[0].y - ballWidth * 0.5f <= -levelHeight){
-	pointLightPositions[0].y = -levelHeight + ballWidth * 0.5f;
+      if(ballPosition.y + ballWidth >= levelHeight){
+	ballPosition.y = levelHeight - ballWidth * .5f;
 	dy *= -1;
       }
   
       // Ball leaves level
-      if(pointLightPositions[0].x < -3.f || pointLightPositions[0].x > 3.f)
+      if(ballPosition.x <= 0.f || ballPosition.x + ballWidth >= levelWidth)
 	{
-	  pointLightPositions[0].x = 0.f;
-	  pointLightPositions[0].y = 0.f;
+	  ballPosition.x = ballStartX;
+	  ballPosition.y = ballStartY;
 	  dx = ballSpeed;
 	  dy = 0;
 	}
 
 
       if(check_aabb(
-		 cubePositions[0].x, cubePositions[0].y, cubePositions[0].z,
+		 paddlePositions[0].x, paddlePositions[0].y, paddlePositions[0].z,
 		 paddleWidth / 2.f, paddleHeight / 2.f, .5f,
-		 pointLightPositions[0].x, pointLightPositions[0].y, pointLightPositions[0].z,
-		 ballWidth / 2.f, ballWidth / 2.f, ballWidth / .5f
+		 ballPosition.x, ballPosition.y, ballPosition.z,
+		 ballWidth / 2.f, ballWidth / 2.f, .5f
 		    ))
       {
-	pointLightPositions[0].x = cubePositions[0].x + paddleWidth;
+	ballPosition.x = paddlePositions[0].x + paddleWidth;
 	dx *= -1;
 	dy = 0;
-	if(pointLightPositions[0].y
-	   >= cubePositions[0].y + paddleWidth / 3.f)
-	  {
-	    dy = dx;
-	  }
-	if(pointLightPositions[0].y
-	   <= cubePositions[0].y - paddleWidth / 3.f)
+	std::cout << "LEFT PADDLE COLLISION";
+	if(ballPosition.y + ballWidth * .5f
+	   <= paddlePositions[0].y + paddleWidth * .33f)
 	  {
 	    dy = -dx;
+	    std::cout << " UPPER";
 	  }
+	if(ballPosition.y + ballWidth * .5f
+	   >= paddlePositions[0].y + paddleWidth * .66f)
+	  {
+	    dy = dx;
+	    std::cout << " LOWER";
+	  }
+	std::cout << std::endl;
       }
 
       if(check_aabb(
-		 cubePositions[1].x, cubePositions[1].y, cubePositions[1].z,
+		 paddlePositions[1].x, paddlePositions[1].y, paddlePositions[1].z,
 		 paddleWidth / 2.f, paddleHeight / 2.f, .5f,
-		 pointLightPositions[0].x, pointLightPositions[0].y, pointLightPositions[0].z,
+		 ballPosition.x, ballPosition.y, ballPosition.z,
 		 ballWidth / 2.f, ballWidth / 2.f, .5f
 		    ))
 	{
-	  pointLightPositions[0].x = cubePositions[1].x - paddleWidth;
+	  ballPosition.x = paddlePositions[1].x - ballWidth;
 	  dx *= -1;
 	  dy = 0;
-	  if(pointLightPositions[0].y
-	     >= cubePositions[1].y + paddleWidth / 3.f)
-	    {
-	      dy = -dx;
-	    }
-	  if(pointLightPositions[0].y
-	     <= cubePositions[1].y - paddleWidth / 3.f)
+	  if(ballPosition.y + ballWidth * .5f
+	     <= paddlePositions[1].y + paddleHeight * .33f)
 	    {
 	      dy = dx;
 	    }
+	  if(ballPosition.y
+	     >= paddlePositions[1].y + paddleHeight * .66f)
+	    {
+	      dy = -dx;
+	    }
 	}
-
-      pointLightPositions[0].x += dx * dt;
-      pointLightPositions[0].y += dy * dt;
+      int32 mx, my;
+      SDL_GetMouseState(&mx, &my);
+      ballPosition.x =0.f;//+= dx * dt;
+      ballPosition.y =0.f;//+= dy * dt;
       
-      for(size_t i = 0; i < nPointLights; ++i)
-	{	 
-	  model = glm::mat4(1.f);
-	  model = glm::translate(model, pointLightPositions[i]);
-	  model = glm::scale(model,
-			     glm::vec3(ballWidth, ballWidth, ballWidth));
+      model = glm::mat4(1.f);
+      model = glm::translate(model, ballPosition);
+      model = glm::scale(model,
+			 glm::vec3(ballWidth, ballWidth, ballWidth));
 
-	  setMat4(lampShader, "model", model); 
-	  glDrawArrays(GL_TRIANGLES, 0, 36);
-	}
+      setMat4(lampShader, "model", model); 
+      glDrawArrays(GL_TRIANGLES, 0, 6);
       
       // NOTE(l4v): Unbind VAO
       glBindVertexArray(0);
@@ -1009,9 +854,9 @@ int main(int argc, char* argv[]){
   SDL_DestroyWindow(window);
   window = 0;
   
-  glDeleteVertexArrays(1, &cubeVAO);
+  glDeleteVertexArrays(1, &paddleVAO);
   glDeleteVertexArrays(1, &lightVAO);
-  glDeleteBuffers(1, &cubeVBO);
+  glDeleteBuffers(1, &paddleVBO);
 
   SDL_Quit();
   
