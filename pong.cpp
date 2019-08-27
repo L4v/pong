@@ -3,7 +3,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-internal const char* load_shader(const char* path)
+internal const char* LoadShader(const char* path)
 {
   char* shaderText = 0;
   int64 length;
@@ -25,7 +25,7 @@ internal const char* load_shader(const char* path)
   return shaderText;
 }
 
-internal glm::mat4 look_at(glm::vec3 cameraPos, glm::vec3 targetPos,
+internal glm::mat4 LookAt(glm::vec3 cameraPos, glm::vec3 targetPos,
 			   glm::vec3 worldUp)
 {
   // NOTE(l4v): Calculate the normalized direction vector of the camera
@@ -64,7 +64,7 @@ internal glm::mat4 look_at(glm::vec3 cameraPos, glm::vec3 targetPos,
   return rotation * translation;
 }
 
-internal void check_shader_compilation(uint32 shader, shader_type type)
+internal void CheckShaderCompilation(uint32 shader, shader_type type)
 {
   // NOTE(l4v): Check if shader compilation failed
   int32 success;
@@ -80,7 +80,7 @@ internal void check_shader_compilation(uint32 shader, shader_type type)
     }  
 }
 
-internal void check_shader_program_link(uint32 program)
+internal void CheckShaderLink(uint32 program)
 {
   int32 success;
   GLchar infoLog[512];
@@ -93,7 +93,7 @@ internal void check_shader_program_link(uint32 program)
     }
 }
 
-internal uint32 load_texture(const char* path)
+internal uint32 LoadTexture(const char* path)
 {
   uint32 id;
   glGenTextures(1, &id);
@@ -132,37 +132,54 @@ internal uint32 load_texture(const char* path)
       return id;
 }
 
-internal inline void setVec3(uint32 shader, const char* variable, const glm::vec3& value)
+internal void InitializeArena(memory_arena* Arena, memory_index Size, uint8* Base)
+{
+  Arena->Size = Size;
+  Arena->Base = Base;
+  Arena->Used = 0;
+}
+
+#define PushStruct(Arena, type) (type*)PushStruct_(Arena, sizeof(type))
+void* PushStruct_(memory_arena* Arena, memory_index Size)
+{
+  Assert((Arena->Used + Size) <= Arena->Size);
+  void* Result = Arena->Base + Arena->Used;
+  Arena->Used += Size;
+  
+  return Result;
+}
+
+internal inline void SetVec3(uint32 shader, const char* variable, const glm::vec3& value)
 {
   glUniform3fv(glGetUniformLocation(shader, variable), 1, &value[0]);
 }
 
-internal inline void setVec3(uint32 shader, const char* variable, real32 x, real32 y, real32 z)
+internal inline void SetVec3(uint32 shader, const char* variable, real32 x, real32 y, real32 z)
 {
   glUniform3f(glGetUniformLocation(shader, variable), x, y, z);
 }
 
-internal inline void setFloat(uint32 shader, const char* variable, real32 fValue)
+internal inline void SetFloat(uint32 shader, const char* variable, real32 fValue)
 {
   glUniform1f(glGetUniformLocation(shader, variable), fValue);
 }
 
-internal inline void setMat4(uint32 shader, const char* variable, const glm::mat4 &mat)
+internal inline void SetMat4(uint32 shader, const char* variable, const glm::mat4 &mat)
 {
   glUniformMatrix4fv(glGetUniformLocation(shader, variable), 1, GL_FALSE, &mat[0][0]);
 }
 
-internal inline void setInt(uint32 shader, const char* variable, uint32 uValue)
+internal inline void SetInt(uint32 shader, const char* variable, uint32 uValue)
 {
   glUniform1i(glGetUniformLocation(shader, variable), uValue);
 }
 
-internal inline void setInt(uint32 shader, const char* variable, int32 iValue)
+internal inline void SetInt(uint32 shader, const char* variable, int32 iValue)
 {
   glUniform1i(glGetUniformLocation(shader, variable), iValue);
 }
 
-internal inline bool check_aabb(real32 x1, real32 y1, real32 z1,
+internal inline bool CheckAABB(real32 x1, real32 y1, real32 z1,
 				real32 w1, real32 h1, real32 d1,
 				real32 x2, real32 y2, real32 z2,
 				real32 w2, real32 h2, real32 d2)
@@ -181,12 +198,12 @@ int main(int argc, char* argv[]){
   void *BaseAddress = (void *)(0);
 #endif
 
-  const char* cubeFragmentShaderSource = load_shader("cube.fs");
-  const char* cubeVertexShaderSource = load_shader("cube.vs");
-  const char* lightFragmentShaderSource = load_shader("light.fs");
-  const char* lightVertexShaderSource = load_shader("light.vs");
-  const char* paddleFragmentShaderSource = load_shader("paddle.fs");
-  const char* paddleVertexShaderSource = load_shader("paddle.vs");
+  const char* cubeFragmentShaderSource = LoadShader("cube.fs");
+  const char* cubeVertexShaderSource = LoadShader("cube.vs");
+  const char* lightFragmentShaderSource = LoadShader("light.fs");
+  const char* lightVertexShaderSource = LoadShader("light.vs");
+  const char* paddleFragmentShaderSource = LoadShader("paddle.fs");
+  const char* paddleVertexShaderSource = LoadShader("paddle.vs");
   
   SDL_Window* window;
   SDL_GLContext glContext;
@@ -200,27 +217,24 @@ int main(int argc, char* argv[]){
   int64 last = 0;
   
   // NOTE(l4v): Allocating new memory and subdividing it into parts
-  game_memory GameMemory{};
-  GameMemory.PermanentStorageSize = Mebibytes(60);
-  GameMemory.TransientStorageSize = Mebibytes(100);
+  game_memory Memory{};
+  Memory.PermanentStorageSize = Mebibytes(60);
+  Memory.TransientStorageSize = Mebibytes(100);
   
-  uint64 TotalStorageSize = GameMemory.PermanentStorageSize
-    + GameMemory.TransientStorageSize;
-  GameMemory.PermanentStorage = mmap(BaseAddress, TotalStorageSize,
+  uint64 TotalStorageSize = Memory.PermanentStorageSize
+    + Memory.TransientStorageSize;
+  Memory.PermanentStorage = mmap(BaseAddress, TotalStorageSize,
   				     PROT_READ | PROT_WRITE,
   				     MAP_ANONYMOUS | MAP_PRIVATE,
   				     -1,
   				     0);
-  GameMemory.TransientStorage = (uint8 *)(GameMemory.PermanentStorage)
-    + GameMemory.PermanentStorageSize;
+  Memory.TransientStorage = (uint8 *)(Memory.PermanentStorage)
+    + Memory.PermanentStorageSize;
   
   // NOTE(l4v): Check if memory allocation failed 
-  Assert(GameMemory.PermanentStorage);  
-  Assert(GameMemory.TransientStorage);
-  Memory->isInitialized++;
+  Assert(Memory.PermanentStorage);  
+  Assert(Memory.TransientStorage);
   
-  //free(data.window);
-    
   quit = false;
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
@@ -251,7 +265,7 @@ int main(int argc, char* argv[]){
   // NOTE(l4v): Initialize GLEW
   glewInit();
   glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
+  
   // NOTE(l4v): Array of vertices for rectangle
   real32 vertices[] = {
 		       -.5f, -.5f, 0.f, 0.0f, 1.0f, // bottom left
@@ -265,18 +279,6 @@ int main(int argc, char* argv[]){
 		      0, 2, 3
   };
   
-  // NOTE(l4v): Positions of cubes
-  glm::vec3 paddlePositions[] = {
-				 glm::vec3( 0.0f, 0.0f, 0.f),
-				 glm::vec3( 0.0f, 0.0f, 0.f)
-  };
-
-  // NOTE(l4v): Positions of point lights
-  glm::vec3 ballPosition = glm::vec3(0.f, 0.f, 0.f);
-  
-  uint32 nPaddles = sizeof(paddlePositions) / sizeof(glm::vec3);
-  uint32 nBalls = sizeof(ballPosition) / sizeof(glm::vec3);
-  
   // NOTE(l4v): Vertex shaders
   // -------------------------
   uint32 lightVertexShader, paddleVertexShader;
@@ -289,10 +291,10 @@ int main(int argc, char* argv[]){
 
   // NOTE(l4v): Shader compilation
   glCompileShader(lightVertexShader);
-  check_shader_compilation(lightVertexShader, VERTEX);
+  CheckShaderCompilation(lightVertexShader, VERTEX);
 
   glCompileShader(paddleVertexShader);
-  check_shader_compilation(paddleVertexShader, VERTEX);
+  CheckShaderCompilation(paddleVertexShader, VERTEX);
 
   // NOTE(l4v): Fragment shaders
   // ---------------------------
@@ -306,10 +308,10 @@ int main(int argc, char* argv[]){
   
   // NOTE(l4v): Shader compilation
   glCompileShader(lightFragmentShader);
-  check_shader_compilation(lightFragmentShader, FRAGMENT);
+  CheckShaderCompilation(lightFragmentShader, FRAGMENT);
 
   glCompileShader(paddleFragmentShader);
-  check_shader_compilation(paddleFragmentShader, FRAGMENT);
+  CheckShaderCompilation(paddleFragmentShader, FRAGMENT);
 
   // NOTE(l4v): Creating a shader program object
   uint32 lampShader, paddleShader;
@@ -317,13 +319,13 @@ int main(int argc, char* argv[]){
   glAttachShader(lampShader, lightVertexShader);
   glAttachShader(lampShader, lightFragmentShader);
   glLinkProgram(lampShader);
-  check_shader_program_link(lampShader);
+  CheckShaderLink(lampShader);
 
   paddleShader = glCreateProgram();
   glAttachShader(paddleShader, paddleVertexShader);
   glAttachShader(paddleShader, paddleFragmentShader);
   glLinkProgram(paddleShader);
-  check_shader_program_link(paddleShader);
+  CheckShaderLink(paddleShader);
   
   // NOTE(l4v): Deleting objects since they're not required after linking them
   // to the shader program
@@ -382,9 +384,9 @@ int main(int argc, char* argv[]){
 
   // NOTE(l4v): Paddle texture
   uint32 paddleTex;
-  paddleTex = load_texture("paddle.png");
+  paddleTex = LoadTexture("paddle.png");
   glUseProgram(paddleShader);
-  setInt(paddleShader, "tex", 0);
+  SetInt(paddleShader, "tex", 0);
 
   // NOTE(l4v): Disable cursor
   SDL_ShowCursor(SDL_DISABLE);
@@ -424,20 +426,30 @@ int main(int argc, char* argv[]){
     playerTwoScore = 0;
   bool justStarted = true;
 
-  paddlePositions[0].x = paddleStartX1;
-  paddlePositions[0].y = paddleStartY1;
-  paddlePositions[1].x = paddleStartX2;
-  paddlePositions[1].y = paddleStartY2;
-
-  ballPosition.x = ballStartX;
-  ballPosition.y = ballStartY;
-
   // NOTE(l4v): For getting delta time
   now = SDL_GetPerformanceCounter();
   last = now;
   dt = 0.f;
   while(!quit)
     {
+      // NOTE(l4v): Setting up game memory
+      Assert(sizeof(game_state) <= Memory.PermanentStorageSize);
+      game_state* GameState = (game_state*)Memory.PermanentStorage;
+      if(!Memory.IsInitialized)
+	{
+	  GameState->PlayerOne.position.x = paddleStartX1;
+	  GameState->PlayerOne.position.y = paddleStartY1;
+	  GameState->PlayerOne.position.z = 1;
+	  GameState->PlayerTwo.position.x = paddleStartX2;
+	  GameState->PlayerTwo.position.y = paddleStartY2;
+	  GameState->PlayerTwo.position.z = 1;
+	  GameState->Ball.position.x = ballStartX;
+	  GameState->Ball.position.y = ballStartY;
+	  GameState->Ball.position.z = 1;
+
+	  Memory.IsInitialized++;
+	}
+      
       // NOTE(l4v): Gets the delta time
       now = SDL_GetPerformanceCounter();
       dt = ((real64)((now - last))) / SDL_GetPerformanceFrequency();
@@ -449,16 +461,16 @@ int main(int argc, char* argv[]){
 
       // NOTE(l4v): Keyboard input irrelevant of events
       if(keystates[SDL_SCANCODE_W])
-	paddlePositions[0].y -= paddleSpeed * dt;
+	GameState->PlayerOne.position.y -= paddleSpeed * dt;
 	
       if(keystates[SDL_SCANCODE_S])
-	paddlePositions[0].y += paddleSpeed * dt;
+	GameState->PlayerOne.position.y += paddleSpeed * dt;
       
       if(keystates[SDL_SCANCODE_UP])
-	paddlePositions[1].y -= paddleSpeed * dt;
+	GameState->PlayerTwo.position.y -= paddleSpeed * dt;
 	
       if(keystates[SDL_SCANCODE_DOWN])
-	paddlePositions[1].y += paddleSpeed * dt;
+	GameState->PlayerTwo.position.y += paddleSpeed * dt;
       
       if(keystates[SDL_SCANCODE_R])
 	{
@@ -468,24 +480,24 @@ int main(int argc, char* argv[]){
 	  playerOneScore = 0;
 	  playerTwoScore = 0;
 	  
-	  paddlePositions[0].y = paddleStartY1;
-	  paddlePositions[1].y = paddleStartY2;
+	  GameState->PlayerOne.position.y = paddleStartY1;
+	  GameState->PlayerTwo.position.y = paddleStartY2;
 
-	  ballPosition.x = ballStartX;
-	  ballPosition.y = ballStartY;
+	  GameState->Ball.position.x = ballStartX;
+	  GameState->Ball.position.y = ballStartY;
 	  dx = ballSpeed;
 	  dy = 0.f;
 	}
 
       // NOTE(l4v): Check that paddles don't leave the level
-      if(paddlePositions[0].y - paddleHeight * .5f <= 0.f)
-	paddlePositions[0].y = paddleHeight * .5f;
-      if(paddlePositions[0].y + paddleHeight * .5f >= (real32)WINDOW_HEIGHT)
-	paddlePositions[0].y = (real32)WINDOW_HEIGHT - paddleHeight * .5f;
-      if(paddlePositions[1].y - paddleHeight * .5f <= 0.f)
-	paddlePositions[1].y = paddleHeight * .5f;
-      if(paddlePositions[1].y + paddleHeight * .5f >= (real32)WINDOW_HEIGHT)
-	paddlePositions[1].y = (real32)WINDOW_HEIGHT - paddleHeight * .5f;
+      if(GameState->PlayerOne.position.y - paddleHeight * .5f <= 0.f)
+	GameState->PlayerOne.position.y = paddleHeight * .5f;
+      if(GameState->PlayerOne.position.y + paddleHeight * .5f >= (real32)WINDOW_HEIGHT)
+	GameState->PlayerOne.position.y = (real32)WINDOW_HEIGHT - paddleHeight * .5f;
+      if(GameState->PlayerTwo.position.y - paddleHeight * .5f <= 0.f)
+	GameState->PlayerTwo.position.y = paddleHeight * .5f;
+      if(GameState->PlayerTwo.position.y + paddleHeight * .5f >= (real32)WINDOW_HEIGHT)
+	GameState->PlayerTwo.position.y = (real32)WINDOW_HEIGHT - paddleHeight * .5f;
       
       while(SDL_PollEvent(&sdlEvent))
 	{
@@ -521,20 +533,24 @@ int main(int argc, char* argv[]){
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       glUseProgram(paddleShader);
-      setMat4(paddleShader, "projection", projection);      
+      SetMat4(paddleShader, "projection", projection);      
 
       // NOTE(l4v): Setting active texture unit and bind texture
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, paddleTex);
 
       // NOTE(l4v): Draw paddle
-      for(size_t i = 0; i < nPaddles; ++i)
+      glm::vec3* positions[2] = {
+				 &GameState->PlayerOne.position,
+				 &GameState->PlayerTwo.position
+      };
+      for(size_t i = 0; i < 2; ++i)
       	{
       	  glm::mat4 model = glm::mat4(1.f);
-      	  model = glm::translate(model, paddlePositions[i]);
+      	  model = glm::translate(model, *positions[i]);
       	  model = glm::scale(model,
       			     glm::vec3(paddleWidth, paddleHeight, 1.f));
-      	  setMat4(paddleShader, "model", model);
+      	  SetMat4(paddleShader, "model", model);
 
 	  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, paddleEBO);
 	  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -543,90 +559,87 @@ int main(int argc, char* argv[]){
       // NOTE(l4v): Ball
       // ----------------
       glUseProgram(lampShader);
-      setMat4(lampShader, "projection", projection);
+      SetMat4(lampShader, "projection", projection);
 
       real32 levelHeight = (real32)WINDOW_HEIGHT;
       real32 levelWidth = (real32)WINDOW_WIDTH;
-
-      if(justStarted)
-	{
-	  dx = ballSpeed * lastScored;
-	}
       
       // Ball hits top
-      if(ballPosition.y - ballWidth * .5f <= 0.f){
-	ballPosition.y = ballWidth * .5f;
+      if(GameState->Ball.position.y - ballWidth * .5f <= 0.f){
+	GameState->Ball.position.y = ballWidth * .5f;
 	dy *= -1;
       }
 
       // Ball hits bottom
-      if(ballPosition.y + ballWidth * .5f >= levelHeight){
-	ballPosition.y = levelHeight - ballWidth * .5f;
+      if(GameState->Ball.position.y + ballWidth * .5f >= levelHeight){
+	GameState->Ball.position.y = levelHeight - ballWidth * .5f;
 	dy *= -1;
       }
   
       // Ball leaves level
-      if(ballPosition.x - ballWidth * .5f <= 0.f
-	 || ballPosition.x + ballWidth * .5f >= levelWidth)
+      if(GameState->Ball.position.x - ballWidth * .5f <= 0.f
+	 || GameState->Ball.position.x + ballWidth * .5f >= levelWidth)
 	{
-	  ballPosition.x = ballStartX;
-	  ballPosition.y = ballStartY;
+	  GameState->Ball.position.x = ballStartX;
+	  GameState->Ball.position.y = ballStartY;
 	  dx = ballSpeed;
 	  dy = 0;
 	}
 
 
-      if(check_aabb(
-		 paddlePositions[0].x, paddlePositions[0].y, paddlePositions[0].z,
+      // NOTE(l4v): Player 1 collision
+      if(CheckAABB(
+		 GameState->PlayerOne.position.x, GameState->PlayerOne.position.y, GameState->PlayerOne.position.z,
 		 paddleWidth / 2.f, paddleHeight / 2.f, .5f,
-		 ballPosition.x, ballPosition.y, ballPosition.z,
+		 GameState->Ball.position.x, GameState->Ball.position.y, GameState->Ball.position.z,
 		 ballWidth / 2.f, ballWidth / 2.f, .5f
 		    ))
       {
-	ballPosition.x = paddlePositions[0].x + paddleWidth;
+	GameState->Ball.position.x = GameState->PlayerOne.position.x + paddleWidth;
 	dx *= -1;
 	dy = 0;
-	if(ballPosition.y
-	   <= paddlePositions[0].y - paddleWidth * .33f)
+	if(GameState->Ball.position.y
+	   <= GameState->PlayerOne.position.y - paddleWidth * .33f)
 	  {
 	    dy = -dx;
 	  }
-	if(ballPosition.y
-	   >= paddlePositions[0].y + paddleWidth * .33f)
+	if(GameState->Ball.position.y
+	   >= GameState->PlayerOne.position.y + paddleWidth * .33f)
 	  {
 	    dy = dx;
 	  }
       }
 
-      if(check_aabb(
-		 paddlePositions[1].x, paddlePositions[1].y, paddlePositions[1].z,
+      // NOTE(l4v): Player 2 collision
+      if(CheckAABB(
+		 GameState->PlayerTwo.position.x, GameState->PlayerTwo.position.y, GameState->PlayerTwo.position.z,
 		 paddleWidth / 2.f, paddleHeight / 2.f, .5f,
-		 ballPosition.x, ballPosition.y, ballPosition.z,
+		 GameState->Ball.position.x, GameState->Ball.position.y, GameState->Ball.position.z,
 		 ballWidth / 2.f, ballWidth / 2.f, .5f
 		    ))
 	{
-	  ballPosition.x = paddlePositions[1].x - ballWidth;
+	  GameState->Ball.position.x = GameState->PlayerTwo.position.x - ballWidth;
 	  dx *= -1;
 	  dy = 0;
-	  if(ballPosition.y
-	     <= paddlePositions[1].y - paddleHeight * .33f)
+	  if(GameState->Ball.position.y
+	     <= GameState->PlayerTwo.position.y - paddleHeight * .33f)
 	    {
 	      dy = dx;
 	    }
-	  if(ballPosition.y
-	     >= paddlePositions[1].y + paddleHeight * .33f)
+	  if(GameState->Ball.position.y
+	     >= GameState->PlayerTwo.position.y + paddleHeight * .33f)
 	    {
 	      dy = -dx;
 	    }
 	}
-      ballPosition.x += dx * dt;
-      ballPosition.y += dy * dt;
+      GameState->Ball.position.x += dx * dt;
+      GameState->Ball.position.y += dy * dt;
       
       model = glm::mat4(1.f);
-      model = glm::translate(model, ballPosition);
+      model = glm::translate(model, GameState->Ball.position);
       model = glm::scale(model,
 			 glm::vec3(ballWidth, ballWidth, ballWidth));
-      setMat4(lampShader, "model", model); 
+      SetMat4(lampShader, "model", model); 
 
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, paddleEBO);
       glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -645,8 +658,8 @@ int main(int argc, char* argv[]){
 
   SDL_Quit();
 
-  munmap(GameMemory.PermanentStorage, GameMemory.PermanentStorageSize);
-  munmap(GameMemory.TransientStorage, GameMemory.TransientStorageSize);
+  munmap(Memory.PermanentStorage, Memory.PermanentStorageSize);
+  munmap(Memory.TransientStorage, Memory.TransientStorageSize);
   
   return 0;
 

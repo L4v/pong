@@ -46,6 +46,8 @@ typedef uint16_t uint16;
 typedef uint32_t uint32;
 typedef uint64_t uint64;
 
+typedef size_t memory_index;
+
 typedef float real32;
 typedef double real64;
 
@@ -66,7 +68,6 @@ struct camera_struct{
 };
 
 struct paddle{
-  //  sf::Sprite sprite;
   real32 dy = 1.f;
   glm::vec3 position;
   real32 width;
@@ -80,14 +81,21 @@ struct ball{
   real32 width;
 };
 struct game_state{
-  bool32 isInitialized;
-  paddle player;
-  paddle ai;
-  ball b;
+  bool32 IsInitialized;
+  paddle PlayerOne;
+  paddle PlayerTwo;
+  ball Ball;
+};
+
+struct memory_arena
+{
+  memory_index Size;
+  uint8* Base;
+  memory_index Used;
 };
 
 struct game_memory{
-  bool32 isInitialized;
+  bool32 IsInitialized;
 
   uint64 PermanentStorageSize;
   void* PermanentStorage;
@@ -113,24 +121,25 @@ enum last_scored
    PLAYER_TWO = -1
   };
 
-internal inline bool check_aabb(real32, real32, real32,
+internal inline bool CheckAABB(real32, real32, real32,
 				real32, real32, real32,
 				real32, real32, real32,
 				real32, real32, real32);
 
-internal glm::mat4 look_at(glm::vec3, glm::vec3, glm::vec3);
-internal const char* load_shader(const char*);
-internal void check_shader_compilation(uint32, shader_type);
-internal void check_shader_program_link(uint32);
+internal glm::mat4 LookAt(glm::vec3, glm::vec3, glm::vec3);
+internal const char* LoadShader(const char*);
+internal void CheckShaderCompilation(uint32, shader_type);
+internal void CheckShaderLink(uint32);
+internal void InitializeArena(memory_arena*, memory_index, uint8*);
 
-internal uint32 load_texture(const char*);
+internal uint32 LoadTexture(const char*);
 
-internal inline void setVec3(uint32, const char*, const glm::vec3&);
-internal inline void setVec3(uint32, const char*, real32, real32, real32);
-internal inline void setMat4(uint32, const char*, const glm::mat4&);
-internal inline void setFloat(uint32, const char*, real32);
-internal inline void setInt(uint32, const char*, uint32);
-internal inline void setInt(uint32, const char*, int32);
+internal inline void SetVec3(uint32, const char*, const glm::vec3&);
+internal inline void SetVec3(uint32, const char*, real32, real32, real32);
+internal inline void SetMat4(uint32, const char*, const glm::mat4&);
+internal inline void SetFloat(uint32, const char*, real32);
+internal inline void SetInt(uint32, const char*, uint32);
+internal inline void SetInt(uint32, const char*, int32);
 //void RenderAndUpdate(sf::RenderWindow*, const real32&);
 //bool32 CheckCollision(real32, real32, real32, real32,
 //		    real32, real32, real32, real32);
