@@ -3,202 +3,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-// bool32 CheckCollision(real32 x1, real32 y1, real32 w1, real32 h1,
-// 		    real32 x2, real32 y2, real32 w2, real32 h2)
-// {
-//   if((x1 + w1 > x2) && (x1 <= x2 + w2) && (y1 + h1 >= y2) && (y1 <= y2 + h2))
-//     {
-//       return true;
-//     }
-//   return false;
-// }
-
-// void drawTriangle(){
-//   glClearColor(0.4, 0.4, 0.4, 0.4);
-//     glClear(GL_COLOR_BUFFER_BIT);
-
-//     glColor3f(1.0, 1.0, 1.0);
-//     glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
-
-//         glBegin(GL_TRIANGLES);
-//                 glVertex3f(-0.7, 0.7, 0);
-//                 glVertex3f(0.7, 0.7, 0);
-//                 glVertex3f(0, -1, 0);
-//         glEnd();
-
-//     glFlush();
-// }
-
-// void RenderAndUpdate(game_memory* Memory, sf::RenderWindow* window, const real32& dt){
-//   // // TODO(l4v): Use the game state
-  
-//   game_state* State = (game_state*)Memory->TransientStorage;
-//   if(!Memory->isInitialized){
-    
-//     State->paddleTexture.loadFromFile("paddle.png");
-//     // std::cout << &State->paddleTexture << " " << &(State->isInitialized) << " "
-//     // 	      << &State->player << " " << &State->ai << std::endl;
-    
-//     State->player.sprite.setTexture(State->paddleTexture);
-//     State->player.sprite.setTexture(State->paddleTexture);
-//     State->ai.sprite.setTexture(State->paddleTexture);
-//     State->b.sprite.setTexture(State->paddleTexture);
-
-//     State->b.sprite.setTextureRect(sf::IntRect(
-// 					sf::Vector2i(0, 0),
-// 					sf::Vector2i(10, 10)));
-//     State->player.sprite.setPosition(100, WINDOW_HEIGHT / 2 - State->player.sprite.getGlobalBounds().height / 2);
-//     State->ai.sprite.setPosition(WINDOW_WIDTH - 100, WINDOW_HEIGHT / 2 - State->player.sprite.getGlobalBounds().height / 2);
-//     State->b.sprite.setPosition(WINDOW_WIDTH / 2 - State->b.sprite.getGlobalBounds().width / 2,
-// 			 WINDOW_HEIGHT / 2 - State->b.sprite.getGlobalBounds().width /2);
-  
-//     State->player.width = State->player.sprite.getGlobalBounds().width;
-//     State->player.height = State->player.sprite.getGlobalBounds().height;
-//     State->ai.width = State->ai.sprite.getGlobalBounds().width;
-//     State->ai.height = State->ai.sprite.getGlobalBounds().height;
-
-//     State->b.width = State->b.sprite.getGlobalBounds().width;
-//     State->b.height = State->b.sprite.getGlobalBounds().height;
-//     State->b.dx = -maxBallSpeed;
-//     State->b.dy = 0.f;
-//     Memory->isInitialized++;  
-//   }
-  
-//   // Updating states
-  
-//   State->player.dy = 0.f;
-//   if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-//     State->player.dy = -1.f;
-
-//   if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-//     State->player.dy = 1.f;
-  
-//   // Ball hits top
-//   if(State->b.sprite.getPosition().y <= 0.f){
-//     State->b.sprite.setPosition(State->b.sprite.getPosition().x, 0.f);
-//     State->b.dy *= -1.f;
-//   }
-
-//   // Ball hits bottom
-//   if(State->b.sprite.getPosition().y + State->b.height >= WINDOW_HEIGHT){
-//     State->b.sprite.setPosition(State->b.sprite.getPosition().x, WINDOW_HEIGHT - State->b.height);
-//     State->b.dy *= -1.f;
-//   }
-  
-//   // Ball leaves level
-//   if(State->b.sprite.getPosition().x < 0.f || State->b.sprite.getPosition().x > WINDOW_WIDTH){
-//     State->b.sprite.setPosition(WINDOW_WIDTH / 2 - State->b.width / 2,
-// 			 WINDOW_HEIGHT / 2 - State->b.height /2);
-//     State->b.dx = -maxBallSpeed;
-//     State->b.dy = 0.f;
-//   }
-
-//   // Player Collision
-//   if(CheckCollision(State->player.sprite.getPosition().x,
-// 		    State->player.sprite.getPosition().y,
-// 		    State->player.width, State->player.height,
-// 		    State->b.sprite.getPosition().x,
-// 		    State->b.sprite.getPosition().y,
-// 		    State->b.width, State->b.height))
-//     {
-//       State->b.dx *= -1.f;
-//       State->b.sprite.setPosition(State->player.sprite.getPosition().x + State->player.width, State->b.sprite.getPosition().y);
-//       // Collision with upper third
-//       if(State->b.sprite.getPosition().y + State->b.height / 2 <=
-// 	 State->player.sprite.getPosition().y
-// 	 + State->player.height / 3)
-// 	{
-// 	  State->b.dy = -State->b.dx;
-// 	}
-//       // Collision with lower third
-//       else if(State->b.sprite.getPosition().y + State->b.height / 2 >=
-// 	      State->player.sprite.getPosition().y +
-// 	      (2.f/3.f) * State->player.height)
-// 	{
-// 	  State->b.dy = State->b.dx;
-// 	}
-//       // Collision with middle
-//       else{
-// 	State->b.dy = 0.f;
-//       }
-//   }
-
-//   // AI collision
-//    if(CheckCollision(State->b.sprite.getPosition().x,
-// 		    State->b.sprite.getPosition().y,
-// 		    State->b.width, State->b.height,
-// 		    State->ai.sprite.getPosition().x,
-// 		    State->ai.sprite.getPosition().y,
-// 		    State->ai.width, State->ai.height))
-//     {
-//     State->b.sprite.setPosition(State->ai.sprite.getPosition().x
-// 			 - State->b.width,
-// 			 State->b.sprite.getPosition().y);
-//     State->b.dx *= -1.f;
-    
-//     // Collision with upper third
-//     if(State->b.sprite.getPosition().y + State->b.height / 2 <=
-//        State->ai.sprite.getPosition().y
-//        + State->ai.height / 3)
-//       {
-// 	State->b.dy = State->b.dx;
-//       }
-//     // Collision with lower third
-//     else if(State->b.sprite.getPosition().y + State->b.height / 2 >=
-// 	    State->ai.sprite.getPosition().y +
-// 	    (2.f/3.f) * State->ai.height)
-//       {
-// 	State->b.dy = -State->b.dx;
-//       }
-//     // Collision with middle
-//     else{
-//       State->b.dy = 0.f;
-//     }
-//   }
-  
-//   // Ball speed limit
-//   if(State->b.dx > 0 && State->b.dx >= maxBallSpeed)
-//     State->b.dx = maxBallSpeed;
-//   if(State->b.dx < 0 && State->b.dx <= -maxBallSpeed)
-//     State->b.dx = -maxBallSpeed;
-//   if(State->b.dy > 0 && State->b.dy >= maxBallSpeed)
-//     State->b.dy = maxBallSpeed;
-//   if(State->b.dy < 0 && State->b.dy <= -maxBallSpeed)
-//     State->b.dy = -maxBallSpeed;
-    
-    
-//   // Update locations
-
-//   // Player location update
-//   State->player.sprite.move(0.f, State->player.dy * paddleSpeed * dt);
-//   if(State->player.sprite.getPosition().y <= 0.f)
-//     State->player.sprite.setPosition(State->player.sprite.getPosition().x, 0.f);
-//   if(State->player.sprite.getPosition().y + State->player.height >= WINDOW_HEIGHT)
-//     State->player.sprite.setPosition(State->player.sprite.getPosition().x,
-// 			      WINDOW_HEIGHT - State->player.height);
-  
-//   // Ball location update
-//   State->b.sprite.move(State->b.dx * dt, State->b.dy * dt);
-    
-//   // Event handling
-//   sf::Event event;
-//   while (window->pollEvent(event))
-//     {
-//       if (event.type == sf::Event::Closed)
-// 	window->close();
-//     }
-
-  
-//   // Render stuff
-//   window->clear();
-    
-//   window->draw(State->player.sprite);
-//   window->draw(State->ai.sprite);
-//   window->draw(State->b.sprite);
-    
-//   window->display();
-// }
-
 internal const char* load_shader(const char* path)
 {
   char* shaderText = 0;
@@ -370,13 +174,6 @@ internal inline bool check_aabb(real32 x1, real32 y1, real32 z1,
   return false;
 }
 
-const char* cubeFragmentShaderSource = load_shader("cube.fs");
-const char* cubeVertexShaderSource = load_shader("cube.vs");
-const char* lightFragmentShaderSource = load_shader("light.fs");
-const char* lightVertexShaderSource = load_shader("light.vs");
-const char* paddleFragmentShaderSource = load_shader("paddle.fs");
-const char* paddleVertexShaderSource = load_shader("paddle.vs");
-
 int main(int argc, char* argv[]){
 #if PONG_INTERNAL
   void *BaseAddress = (void *)Gibibytes(250);
@@ -384,6 +181,13 @@ int main(int argc, char* argv[]){
   void *BaseAddress = (void *)(0);
 #endif
 
+  const char* cubeFragmentShaderSource = load_shader("cube.fs");
+  const char* cubeVertexShaderSource = load_shader("cube.vs");
+  const char* lightFragmentShaderSource = load_shader("light.fs");
+  const char* lightVertexShaderSource = load_shader("light.vs");
+  const char* paddleFragmentShaderSource = load_shader("paddle.fs");
+  const char* paddleVertexShaderSource = load_shader("paddle.vs");
+  
   SDL_Window* window;
   SDL_GLContext glContext;
   SDL_Event sdlEvent;
@@ -396,29 +200,27 @@ int main(int argc, char* argv[]){
   int64 last = 0;
   
   // NOTE(l4v): Allocating new memory and subdividing it into parts
-  // game_memory GameMemory{};
-  // GameMemory.PermanentStorageSize = Mebibytes(60);
-  // GameMemory.TransientStorageSize = Mebibytes(100);
+  game_memory GameMemory{};
+  GameMemory.PermanentStorageSize = Mebibytes(60);
+  GameMemory.TransientStorageSize = Mebibytes(100);
   
-  // uint64 TotalStorageSize = GameMemory.PermanentStorageSize
-  //   + GameMemory.TransientStorageSize;
-  // GameMemory.PermanentStorage = mmap(BaseAddress, TotalStorageSize,
-  // 				     PROT_READ | PROT_WRITE,
-  // 				     MAP_ANONYMOUS | MAP_PRIVATE,
-  // 				     -1,
-  // 				     0);
-  // GameMemory.TransientStorage = (uint8 *)(GameMemory.PermanentStorage)
-  //   + GameMemory.PermanentStorageSize;
+  uint64 TotalStorageSize = GameMemory.PermanentStorageSize
+    + GameMemory.TransientStorageSize;
+  GameMemory.PermanentStorage = mmap(BaseAddress, TotalStorageSize,
+  				     PROT_READ | PROT_WRITE,
+  				     MAP_ANONYMOUS | MAP_PRIVATE,
+  				     -1,
+  				     0);
+  GameMemory.TransientStorage = (uint8 *)(GameMemory.PermanentStorage)
+    + GameMemory.PermanentStorageSize;
   
-  // // NOTE(l4v): Check if memory allocation failed 
-  // Assert(GameMemory.PermanentStorage);  
-  // Assert(GameMemory.TransientStorage);
-  // Memory->isInitialized++;
-  /*
-    munmap(GameMemory.PermanentStorage, GameMemory.PermanentStorageSize);
-    munmap(GameMemory.TransientStorage, GameMemory.TransientStorageSize);
-    //free(data.window);
-    */
+  // NOTE(l4v): Check if memory allocation failed 
+  Assert(GameMemory.PermanentStorage);  
+  Assert(GameMemory.TransientStorage);
+  Memory->isInitialized++;
+  
+  //free(data.window);
+    
   quit = false;
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
@@ -593,18 +395,11 @@ int main(int argc, char* argv[]){
 
   // NOTE(l4v): Enables the z-buffer
   glEnable(GL_DEPTH_TEST);  
-  
-  // TODO(l4v): Should group these things
-  // ------------------------------------
 
-  // NOTE(l4v): Camera variables
+  // NOTE(l4v): Setting up the view
   glm::mat4 model = glm::mat4(1.f);
   glm::mat4 projection;
   glm::mat4 view = glm::mat4(1.f);
-			       
-  // NOTE(l4v): Colors  
-  glm::vec3 lightDir(-.2f, -1.f, -.3f);
-  glm::vec3 lightPos = glm::vec3(1.f, 1.f, 1.f);
 
   // NOTE(l4v): Paddle and ball vars
   real32 paddleSpeed = 500.f;
@@ -615,14 +410,19 @@ int main(int argc, char* argv[]){
   real32 ballSpeed = 300.f;
   real32 dx = ballSpeed;
   real32 dy = 0.f;
-
   real32 paddleStartY1= (real32)WINDOW_HEIGHT * 0.5f;
   real32 paddleStartX1 = 50.f;
   real32 paddleStartY2 = (real32)WINDOW_HEIGHT * 0.5f;
   real32 paddleStartX2 = (real32)WINDOW_WIDTH - 50.f;
   real32 ballStartX = (real32)WINDOW_WIDTH * .5f;
   real32 ballStartY = (real32)WINDOW_HEIGHT * .5f;
-  
+
+  // NOTE(l4v): Used to determine who's time it is to scoren
+  last_scored lastScored = PLAYER_ONE;
+  uint32
+    playerOneScore = 0,
+    playerTwoScore = 0;
+  bool justStarted = true;
 
   paddlePositions[0].x = paddleStartX1;
   paddlePositions[0].y = paddleStartY1;
@@ -631,7 +431,8 @@ int main(int argc, char* argv[]){
 
   ballPosition.x = ballStartX;
   ballPosition.y = ballStartY;
-  
+
+  // NOTE(l4v): For getting delta time
   now = SDL_GetPerformanceCounter();
   last = now;
   dt = 0.f;
@@ -661,6 +462,12 @@ int main(int argc, char* argv[]){
       
       if(keystates[SDL_SCANCODE_R])
 	{
+	  lastScored = PLAYER_ONE;
+	  justStarted = true;
+
+	  playerOneScore = 0;
+	  playerTwoScore = 0;
+	  
 	  paddlePositions[0].y = paddleStartY1;
 	  paddlePositions[1].y = paddleStartY2;
 
@@ -670,14 +477,15 @@ int main(int argc, char* argv[]){
 	  dy = 0.f;
 	}
 
-      if(paddlePositions[0].y <= 0.f)
-	paddlePositions[0].y = 0.f;
-      if(paddlePositions[0].y + paddleHeight >= (real32)WINDOW_HEIGHT)
-	paddlePositions[0].y = (real32)WINDOW_HEIGHT - paddleHeight;
-      if(paddlePositions[1].y <= 0.f)
-	paddlePositions[1].y = 0.f;
-      if(paddlePositions[1].y + paddleHeight >= (real32)WINDOW_HEIGHT)
-	paddlePositions[1].y = (real32)WINDOW_HEIGHT - paddleHeight;
+      // NOTE(l4v): Check that paddles don't leave the level
+      if(paddlePositions[0].y - paddleHeight * .5f <= 0.f)
+	paddlePositions[0].y = paddleHeight * .5f;
+      if(paddlePositions[0].y + paddleHeight * .5f >= (real32)WINDOW_HEIGHT)
+	paddlePositions[0].y = (real32)WINDOW_HEIGHT - paddleHeight * .5f;
+      if(paddlePositions[1].y - paddleHeight * .5f <= 0.f)
+	paddlePositions[1].y = paddleHeight * .5f;
+      if(paddlePositions[1].y + paddleHeight * .5f >= (real32)WINDOW_HEIGHT)
+	paddlePositions[1].y = (real32)WINDOW_HEIGHT - paddleHeight * .5f;
       
       while(SDL_PollEvent(&sdlEvent))
 	{
@@ -732,7 +540,7 @@ int main(int argc, char* argv[]){
 	  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
       	}
       
-      // NOTE(l4v): Lamp
+      // NOTE(l4v): Ball
       // ----------------
       glUseProgram(lampShader);
       setMat4(lampShader, "projection", projection);
@@ -740,6 +548,11 @@ int main(int argc, char* argv[]){
       real32 levelHeight = (real32)WINDOW_HEIGHT;
       real32 levelWidth = (real32)WINDOW_WIDTH;
 
+      if(justStarted)
+	{
+	  dx = ballSpeed * lastScored;
+	}
+      
       // Ball hits top
       if(ballPosition.y - ballWidth * .5f <= 0.f){
 	ballPosition.y = ballWidth * .5f;
@@ -806,8 +619,6 @@ int main(int argc, char* argv[]){
 	      dy = -dx;
 	    }
 	}
-      int32 mx, my;
-      SDL_GetMouseState(&mx, &my);
       ballPosition.x += dx * dt;
       ballPosition.y += dy * dt;
       
@@ -833,6 +644,9 @@ int main(int argc, char* argv[]){
   glDeleteBuffers(1, &paddleVBO);
 
   SDL_Quit();
+
+  munmap(GameMemory.PermanentStorage, GameMemory.PermanentStorageSize);
+  munmap(GameMemory.TransientStorage, GameMemory.TransientStorageSize);
   
   return 0;
 

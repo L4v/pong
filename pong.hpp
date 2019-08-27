@@ -68,23 +68,18 @@ struct camera_struct{
 struct paddle{
   //  sf::Sprite sprite;
   real32 dy = 1.f;
-  real32 x;
-  real32 y;
+  glm::vec3 position;
   real32 width;
   real32 height;
 };
 
 struct ball{
-  //  sf::Sprite sprite;
   real32 dx;
   real32 dy;
-  real32 x;
-  real32 y;
+  glm::vec3 position;
   real32 width;
-  real32 height;
 };
 struct game_state{
-  //  sf::Texture paddleTexture;
   bool32 isInitialized;
   paddle player;
   paddle ai;
@@ -110,6 +105,12 @@ enum shader_type
   {
    VERTEX = 0,
    FRAGMENT
+  };
+
+enum last_scored
+  {
+   PLAYER_ONE = 1,
+   PLAYER_TWO = -1
   };
 
 internal inline bool check_aabb(real32, real32, real32,
