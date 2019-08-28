@@ -191,6 +191,214 @@ internal inline bool CheckAABB(real32 x1, real32 y1, real32 z1,
   return false;
 }
 
+void UpdateAndRender(game_memory* Memory, const real32 dt,
+		     uint32 paddleShader, uint32 lampShader,
+		     uint32 paddleEBO, uint32 paddleTex)
+{
+  // NOTE(l4v): Paddle and ball vars
+  real32 paddleSpeed = 500.f;
+  real32
+    paddleWidth = 12.5f,
+    paddleHeight = 75.f;
+  real32 ballWidth = 10.f;
+  real32 ballSpeed = 300.f;
+  real32 paddleStartY1= (real32)WINDOW_HEIGHT * 0.5f;
+  real32 paddleStartX1 = 50.f;
+  real32 paddleStartY2 = (real32)WINDOW_HEIGHT * 0.5f;
+  real32 paddleStartX2 = (real32)WINDOW_WIDTH - 50.f;
+  real32 ballStartX = (real32)WINDOW_WIDTH * .5f;
+  real32 ballStartY = (real32)WINDOW_HEIGHT * .5f;
+
+  // NOTE(l4v): Setting up game memory
+  Assert(sizeof(game_state) <= Memory->PermanentStorageSize);
+  game_state* GameState = (game_state*)Memory->PermanentStorage;
+  if(!Memory->IsInitialized)
+    {
+      // NOTE(l4v): Initial player and ball positions and speeds
+      GameState->PlayerOne.position.x = paddleStartX1;
+      GameState->PlayerOne.position.y = paddleStartY1;
+      GameState->PlayerOne.position.z = 1;
+      GameState->PlayerTwo.position.x = paddleStartX2;
+      GameState->PlayerTwo.position.y = paddleStartY2;
+      GameState->PlayerTwo.position.z = 1;
+      GameState->Ball.position.x = ballStartX;
+      GameState->Ball.position.y = ballStartY;
+      GameState->Ball.position.z = 1;
+      GameState->Ball.dx = ballSpeed;
+      GameState->Ball.dy = 0.f;
+      
+      // NOTE(l4v): Setting up the view
+      GameState->projection;
+      GameState->view = glm::mat4(1.f);
+
+      // NOTE(l4v): Signalizes that the memory is initialized
+      Memory->IsInitialized++;
+    }
+
+  // TODO(l4v): MEMORY!!!
+  const uint8* keystates;
+  keystates = SDL_GetKeyboardState(0);
+
+  // NOTE(l4v): Keyboard input irrelevant of events
+  if(keystates[SDL_SCANCODE_W])
+    GameState->PlayerOne.position.y -= paddleSpeed * dt;
+	
+  if(keystates[SDL_SCANCODE_S])
+    GameState->PlayerOne.position.y += paddleSpeed * dt;
+      
+  if(keystates[SDL_SCANCODE_UP])
+    GameState->PlayerTwo.position.y -= paddleSpeed * dt;
+	
+  if(keystates[SDL_SCANCODE_DOWN])
+    GameState->PlayerTwo.position.y += paddleSpeed * dt;
+      
+  if(keystates[SDL_SCANCODE_R])
+    {
+      GameState->PlayerOne.position.y = paddleStartY1;
+      GameState->PlayerTwo.position.y = paddleStartY2;
+
+      GameState->Ball.position.x = ballStartX;
+      GameState->Ball.position.y = ballStartY;
+      GameState->Ball.dx = ballSpeed;
+      GameState->Ball.dy = 0.f;
+    }
+
+  // NOTE(l4v): Check that paddles don't leave the level
+  if(GameState->PlayerOne.position.y - paddleHeight * .5f <= 0.f)
+    GameState->PlayerOne.position.y = paddleHeight * .5f;
+  if(GameState->PlayerOne.position.y + paddleHeight * .5f >= (real32)WINDOW_HEIGHT)
+    GameState->PlayerOne.position.y = (real32)WINDOW_HEIGHT - paddleHeight * .5f;
+  if(GameState->PlayerTwo.position.y - paddleHeight * .5f <= 0.f)
+    GameState->PlayerTwo.position.y = paddleHeight * .5f;
+  if(GameState->PlayerTwo.position.y + paddleHeight * .5f >= (real32)WINDOW_HEIGHT)
+    GameState->PlayerTwo.position.y = (real32)WINDOW_HEIGHT - paddleHeight * .5f;
+
+  // NOTE(l4v): Projection matrix, gives a feeling of perspective
+  GameState->projection = glm::ortho(.0f,
+			  (real32)WINDOW_WIDTH,
+			  (real32)WINDOW_HEIGHT,
+			  0.f,
+			  -1.f, 1.f);
+
+  // NOTE(l4v): Set background to black color
+  glClearColor(0.1f, 0.1f, 0.1f, 1.f);
+      
+  // NOTE(l4v): Clear the color buffer
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  glUseProgram(paddleShader);
+  SetMat4(paddleShader, "projection", GameState->projection);      
+
+  // NOTE(l4v): Setting active texture unit and bind texture
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, paddleTex);
+
+  // NOTE(l4v): Draw paddle
+  glm::vec3* positions[2] = {
+			     &GameState->PlayerOne.position,
+			     &GameState->PlayerTwo.position
+  };
+  for(size_t i = 0; i < 2; ++i)
+    {
+      glm::mat4 model = glm::mat4(1.f);
+      model = glm::translate(model, *positions[i]);
+      model = glm::scale(model,
+			 glm::vec3(paddleWidth, paddleHeight, 1.f));
+      SetMat4(paddleShader, "model", model);
+
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, paddleEBO);
+      glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    }
+      
+  // NOTE(l4v): Ball
+  // ----------------
+  glUseProgram(lampShader);
+  SetMat4(lampShader, "projection", GameState->projection);
+
+  real32 levelHeight = (real32)WINDOW_HEIGHT;
+  real32 levelWidth = (real32)WINDOW_WIDTH;
+      
+  // Ball hits top
+  if(GameState->Ball.position.y - ballWidth * .5f <= 0.f){
+    GameState->Ball.position.y = ballWidth * .5f;
+    GameState->Ball.dy *= -1;
+  }
+
+  // Ball hits bottom
+  if(GameState->Ball.position.y + ballWidth * .5f >= levelHeight){
+    GameState->Ball.position.y = levelHeight - ballWidth * .5f;
+    GameState->Ball.dy *= -1;
+  }
+  
+  // Ball leaves level
+  if(GameState->Ball.position.x - ballWidth * .5f <= 0.f
+     || GameState->Ball.position.x + ballWidth * .5f >= levelWidth)
+    {
+      GameState->Ball.position.x = ballStartX;
+      GameState->Ball.position.y = ballStartY;
+      GameState->Ball.dx = ballSpeed;
+      GameState->Ball.dy = 0;
+    }
+
+
+  // NOTE(l4v): Player 1 collision
+  if(CheckAABB(
+	       GameState->PlayerOne.position.x, GameState->PlayerOne.position.y, GameState->PlayerOne.position.z,
+	       paddleWidth / 2.f, paddleHeight / 2.f, .5f,
+	       GameState->Ball.position.x, GameState->Ball.position.y, GameState->Ball.position.z,
+	       ballWidth / 2.f, ballWidth / 2.f, .5f
+	       ))
+    {
+      GameState->Ball.position.x = GameState->PlayerOne.position.x + paddleWidth;
+      GameState->Ball.dx *= -1;
+      GameState->Ball.dy = 0;
+      if(GameState->Ball.position.y
+	 <= GameState->PlayerOne.position.y - paddleWidth * .33f)
+	{
+	  GameState->Ball.dy = -GameState->Ball.dx;
+	}
+      if(GameState->Ball.position.y
+	 >= GameState->PlayerOne.position.y + paddleWidth * .33f)
+	{
+	  GameState->Ball.dy = GameState->Ball.dx;
+	}
+    }
+
+  // NOTE(l4v): Player 2 collision
+  if(CheckAABB(
+	       GameState->PlayerTwo.position.x, GameState->PlayerTwo.position.y, GameState->PlayerTwo.position.z,
+	       paddleWidth / 2.f, paddleHeight / 2.f, .5f,
+	       GameState->Ball.position.x, GameState->Ball.position.y, GameState->Ball.position.z,
+	       ballWidth / 2.f, ballWidth / 2.f, .5f
+	       ))
+    {
+      GameState->Ball.position.x = GameState->PlayerTwo.position.x - ballWidth;
+      GameState->Ball.dx *= -1;
+      GameState->Ball.dy = 0;
+      if(GameState->Ball.position.y
+	 <= GameState->PlayerTwo.position.y - paddleHeight * .33f)
+	{
+	  GameState->Ball.dy = GameState->Ball.dx;
+	}
+      if(GameState->Ball.position.y
+	 >= GameState->PlayerTwo.position.y + paddleHeight * .33f)
+	{
+	  GameState->Ball.dy = -GameState->Ball.dx;
+	}
+    }
+  GameState->Ball.position.x += GameState->Ball.dx * dt;
+  GameState->Ball.position.y += GameState->Ball.dy * dt;
+      
+  glm::mat4 model = glm::mat4(1.f);
+  model = glm::translate(model, GameState->Ball.position);
+  model = glm::scale(model,
+		     glm::vec3(ballWidth, ballWidth, ballWidth));
+  SetMat4(lampShader, "model", model); 
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, paddleEBO);
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
 int main(int argc, char* argv[]){
 #if PONG_INTERNAL
   void *BaseAddress = (void *)Gibibytes(250);
@@ -398,106 +606,16 @@ int main(int argc, char* argv[]){
   // NOTE(l4v): Enables the z-buffer
   glEnable(GL_DEPTH_TEST);  
 
-  // NOTE(l4v): Setting up the view
-  glm::mat4 model = glm::mat4(1.f);
-  glm::mat4 projection;
-  glm::mat4 view = glm::mat4(1.f);
-
-  // NOTE(l4v): Paddle and ball vars
-  real32 paddleSpeed = 500.f;
-  real32
-    paddleWidth = 12.5f,
-    paddleHeight = 75.f;
-  real32 ballWidth = 10.f;
-  real32 ballSpeed = 300.f;
-  real32 dx = ballSpeed;
-  real32 dy = 0.f;
-  real32 paddleStartY1= (real32)WINDOW_HEIGHT * 0.5f;
-  real32 paddleStartX1 = 50.f;
-  real32 paddleStartY2 = (real32)WINDOW_HEIGHT * 0.5f;
-  real32 paddleStartX2 = (real32)WINDOW_WIDTH - 50.f;
-  real32 ballStartX = (real32)WINDOW_WIDTH * .5f;
-  real32 ballStartY = (real32)WINDOW_HEIGHT * .5f;
-
-  // NOTE(l4v): Used to determine who's time it is to scoren
-  last_scored lastScored = PLAYER_ONE;
-  uint32
-    playerOneScore = 0,
-    playerTwoScore = 0;
-  bool justStarted = true;
-
   // NOTE(l4v): For getting delta time
   now = SDL_GetPerformanceCounter();
   last = now;
   dt = 0.f;
   while(!quit)
-    {
-      // NOTE(l4v): Setting up game memory
-      Assert(sizeof(game_state) <= Memory.PermanentStorageSize);
-      game_state* GameState = (game_state*)Memory.PermanentStorage;
-      if(!Memory.IsInitialized)
-	{
-	  GameState->PlayerOne.position.x = paddleStartX1;
-	  GameState->PlayerOne.position.y = paddleStartY1;
-	  GameState->PlayerOne.position.z = 1;
-	  GameState->PlayerTwo.position.x = paddleStartX2;
-	  GameState->PlayerTwo.position.y = paddleStartY2;
-	  GameState->PlayerTwo.position.z = 1;
-	  GameState->Ball.position.x = ballStartX;
-	  GameState->Ball.position.y = ballStartY;
-	  GameState->Ball.position.z = 1;
-
-	  Memory.IsInitialized++;
-	}
-      
+    {      
       // NOTE(l4v): Gets the delta time
       now = SDL_GetPerformanceCounter();
       dt = ((real64)((now - last))) / SDL_GetPerformanceFrequency();
       last = now;
-
-      // TODO(l4v): MEMORY!!!
-      const uint8* keystates;
-      keystates = SDL_GetKeyboardState(0);
-
-      // NOTE(l4v): Keyboard input irrelevant of events
-      if(keystates[SDL_SCANCODE_W])
-	GameState->PlayerOne.position.y -= paddleSpeed * dt;
-	
-      if(keystates[SDL_SCANCODE_S])
-	GameState->PlayerOne.position.y += paddleSpeed * dt;
-      
-      if(keystates[SDL_SCANCODE_UP])
-	GameState->PlayerTwo.position.y -= paddleSpeed * dt;
-	
-      if(keystates[SDL_SCANCODE_DOWN])
-	GameState->PlayerTwo.position.y += paddleSpeed * dt;
-      
-      if(keystates[SDL_SCANCODE_R])
-	{
-	  lastScored = PLAYER_ONE;
-	  justStarted = true;
-
-	  playerOneScore = 0;
-	  playerTwoScore = 0;
-	  
-	  GameState->PlayerOne.position.y = paddleStartY1;
-	  GameState->PlayerTwo.position.y = paddleStartY2;
-
-	  GameState->Ball.position.x = ballStartX;
-	  GameState->Ball.position.y = ballStartY;
-	  dx = ballSpeed;
-	  dy = 0.f;
-	}
-
-      // NOTE(l4v): Check that paddles don't leave the level
-      if(GameState->PlayerOne.position.y - paddleHeight * .5f <= 0.f)
-	GameState->PlayerOne.position.y = paddleHeight * .5f;
-      if(GameState->PlayerOne.position.y + paddleHeight * .5f >= (real32)WINDOW_HEIGHT)
-	GameState->PlayerOne.position.y = (real32)WINDOW_HEIGHT - paddleHeight * .5f;
-      if(GameState->PlayerTwo.position.y - paddleHeight * .5f <= 0.f)
-	GameState->PlayerTwo.position.y = paddleHeight * .5f;
-      if(GameState->PlayerTwo.position.y + paddleHeight * .5f >= (real32)WINDOW_HEIGHT)
-	GameState->PlayerTwo.position.y = (real32)WINDOW_HEIGHT - paddleHeight * .5f;
       
       while(SDL_PollEvent(&sdlEvent))
 	{
@@ -519,133 +637,9 @@ int main(int argc, char* argv[]){
 	    }
 	}
 
-      // NOTE(l4v): Projection matrix, gives a feeling of perspective
-      projection = glm::ortho(.0f,
-			      (real32)WINDOW_WIDTH,
-			      (real32)WINDOW_HEIGHT,
-			      0.f,
-			      -1.f, 1.f);
-
-      // NOTE(l4v): Set background to black color
-      glClearColor(0.1f, 0.1f, 0.1f, 1.f);
-      
-      // NOTE(l4v): Clear the color buffer
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-      glUseProgram(paddleShader);
-      SetMat4(paddleShader, "projection", projection);      
-
-      // NOTE(l4v): Setting active texture unit and bind texture
-      glActiveTexture(GL_TEXTURE0);
-      glBindTexture(GL_TEXTURE_2D, paddleTex);
-
-      // NOTE(l4v): Draw paddle
-      glm::vec3* positions[2] = {
-				 &GameState->PlayerOne.position,
-				 &GameState->PlayerTwo.position
-      };
-      for(size_t i = 0; i < 2; ++i)
-      	{
-      	  glm::mat4 model = glm::mat4(1.f);
-      	  model = glm::translate(model, *positions[i]);
-      	  model = glm::scale(model,
-      			     glm::vec3(paddleWidth, paddleHeight, 1.f));
-      	  SetMat4(paddleShader, "model", model);
-
-	  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, paddleEBO);
-	  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-      	}
-      
-      // NOTE(l4v): Ball
-      // ----------------
-      glUseProgram(lampShader);
-      SetMat4(lampShader, "projection", projection);
-
-      real32 levelHeight = (real32)WINDOW_HEIGHT;
-      real32 levelWidth = (real32)WINDOW_WIDTH;
-      
-      // Ball hits top
-      if(GameState->Ball.position.y - ballWidth * .5f <= 0.f){
-	GameState->Ball.position.y = ballWidth * .5f;
-	dy *= -1;
-      }
-
-      // Ball hits bottom
-      if(GameState->Ball.position.y + ballWidth * .5f >= levelHeight){
-	GameState->Ball.position.y = levelHeight - ballWidth * .5f;
-	dy *= -1;
-      }
-  
-      // Ball leaves level
-      if(GameState->Ball.position.x - ballWidth * .5f <= 0.f
-	 || GameState->Ball.position.x + ballWidth * .5f >= levelWidth)
-	{
-	  GameState->Ball.position.x = ballStartX;
-	  GameState->Ball.position.y = ballStartY;
-	  dx = ballSpeed;
-	  dy = 0;
-	}
-
-
-      // NOTE(l4v): Player 1 collision
-      if(CheckAABB(
-		 GameState->PlayerOne.position.x, GameState->PlayerOne.position.y, GameState->PlayerOne.position.z,
-		 paddleWidth / 2.f, paddleHeight / 2.f, .5f,
-		 GameState->Ball.position.x, GameState->Ball.position.y, GameState->Ball.position.z,
-		 ballWidth / 2.f, ballWidth / 2.f, .5f
-		    ))
-      {
-	GameState->Ball.position.x = GameState->PlayerOne.position.x + paddleWidth;
-	dx *= -1;
-	dy = 0;
-	if(GameState->Ball.position.y
-	   <= GameState->PlayerOne.position.y - paddleWidth * .33f)
-	  {
-	    dy = -dx;
-	  }
-	if(GameState->Ball.position.y
-	   >= GameState->PlayerOne.position.y + paddleWidth * .33f)
-	  {
-	    dy = dx;
-	  }
-      }
-
-      // NOTE(l4v): Player 2 collision
-      if(CheckAABB(
-		 GameState->PlayerTwo.position.x, GameState->PlayerTwo.position.y, GameState->PlayerTwo.position.z,
-		 paddleWidth / 2.f, paddleHeight / 2.f, .5f,
-		 GameState->Ball.position.x, GameState->Ball.position.y, GameState->Ball.position.z,
-		 ballWidth / 2.f, ballWidth / 2.f, .5f
-		    ))
-	{
-	  GameState->Ball.position.x = GameState->PlayerTwo.position.x - ballWidth;
-	  dx *= -1;
-	  dy = 0;
-	  if(GameState->Ball.position.y
-	     <= GameState->PlayerTwo.position.y - paddleHeight * .33f)
-	    {
-	      dy = dx;
-	    }
-	  if(GameState->Ball.position.y
-	     >= GameState->PlayerTwo.position.y + paddleHeight * .33f)
-	    {
-	      dy = -dx;
-	    }
-	}
-      GameState->Ball.position.x += dx * dt;
-      GameState->Ball.position.y += dy * dt;
-      
-      model = glm::mat4(1.f);
-      model = glm::translate(model, GameState->Ball.position);
-      model = glm::scale(model,
-			 glm::vec3(ballWidth, ballWidth, ballWidth));
-      SetMat4(lampShader, "model", model); 
-
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, paddleEBO);
-      glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-      
-      // NOTE(l4v): Swap the buffers
-      SDL_GL_SwapWindow(window);      
+      UpdateAndRender(&Memory, dt, paddleShader, lampShader, paddleEBO,
+		      paddleTex);
+      SDL_GL_SwapWindow(window);
     }
 
   // Destroy window
@@ -664,4 +658,3 @@ int main(int argc, char* argv[]){
   return 0;
 
 }
-https://youtu.be/IJYTwhqfKLg?t=3239

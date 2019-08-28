@@ -68,7 +68,7 @@ struct camera_struct{
 };
 
 struct paddle{
-  real32 dy = 1.f;
+  real32 dy;
   glm::vec3 position;
   real32 width;
   real32 height;
@@ -85,6 +85,9 @@ struct game_state{
   paddle PlayerOne;
   paddle PlayerTwo;
   ball Ball;
+
+  glm::mat4 projection;
+  glm::mat4 view;
 };
 
 struct memory_arena
@@ -104,10 +107,6 @@ struct game_memory{
   void* TransientStorage;
 };
 
-// TEMP
-real32 paddleSpeed = 600.f;
-real32 maxBallSpeed = 500.f;
-real32 ballAccel = 10.f;
 
 enum shader_type
   {
@@ -140,6 +139,10 @@ internal inline void SetMat4(uint32, const char*, const glm::mat4&);
 internal inline void SetFloat(uint32, const char*, real32);
 internal inline void SetInt(uint32, const char*, uint32);
 internal inline void SetInt(uint32, const char*, int32);
+
+void UpdateAndRender(game_memory* Memory, const real32 dt,
+		     uint32 paddleShader, uint32 lampShader,
+		     uint32 paddleEBO, uint32 paddleTex);
 //void RenderAndUpdate(sf::RenderWindow*, const real32&);
 //bool32 CheckCollision(real32, real32, real32, real32,
 //		    real32, real32, real32, real32);
