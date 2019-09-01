@@ -388,7 +388,7 @@ void UpdateAndRender(game_memory* Memory, const real32 dt,
     }
   GameState->Ball.position.x += GameState->Ball.dx * dt;
   GameState->Ball.position.y += GameState->Ball.dy * dt;
-      
+
   glm::mat4 model = glm::mat4(1.f);
   model = glm::translate(model, GameState->Ball.position);
   model = glm::scale(model,
